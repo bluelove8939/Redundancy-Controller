@@ -49,14 +49,13 @@ localparam [MODE_WIDTH-1:0] RC_OUTPUT     = RC_MODE_WIDTH'd5;  // output mode
  *  Registers and Buffers
  */
 
-
 reg valid_reg;  // output valid signal
 
-reg [RC_MODE_WIDTH-1:0] mode;       // FSM state register
+reg [RC_MODE_WIDTH-1:0] mode;  // FSM state register
 
 reg [WORD_WIDTH-1:0] rsiz_cnt;  // counter for row size of LIFM
 reg [WORD_WIDTH-1:0] cursor_a;  // cursor_a and cursor_b are used to check redundancy
-reg [WORD_WIDTH-1:0] cursor_b;  // cursor_a is for src column and cursor_b is for dest column
+reg [WORD_WIDTH-1:0] cursor_b;  // cursor_b is for src column and cursor_b is for dest column
 
 reg [0:MAX_LIFM_RSIZ-1] [WORD_WIDTH-1:0]            kidx_buffer;  // buffer for index of each redundant kernel element
 reg [0:MAX_LIFM_RSIZ-1] [WORD_WIDTH*STEP_RANGE-1:0] lifm_buffer;  // buffer for lowered input feature map
@@ -66,6 +65,38 @@ reg [0:MAX_LIFM_RSIZ-1] [2*STEP_RANGE-1:0]          st_buffer;    // buffer for 
 assign valid        = valid_reg;
 assign olifm_column = lifm_buffer[MAX_LIFM_RSIZ-1];
 assign mt_column    = mt_buffer[MAX_LIFM_RSIZ-1];
+
+
+/*
+ *  Distance Calculation Unit
+ */
+
+reg dc_unit_enable;
+wire [0:MAX_LIFM_RSIZ-2]                  dc_unit_valid_vec;
+wire [0:MAX_LIFM_RSIZ-2] [WORD_WIDTH-1:0] hdist_vec;
+wire [0:MAX_LIFM_RSIZ-2] [WORD_WIDTH-1:0] vdist_vec;
+
+genvar dist_it;
+
+generate
+    for (dist_it = 0; dist_it < MAX_LIFM_RSIZ-1; dist_it = dist_it + 1) begin
+        DistCalc #(.WORD_WIDTH(WORD_WIDTH)) dc_unit (
+            .clk(clk),
+            .reset_n(reset_n),
+            .enable_in(dc_unit_enable);
+
+            .ke_width(ke_width),
+
+            .idx1(kidx_buffer[dist_it]),
+            .idx2(kidx_buffer[dist_it+1]),
+
+            .valid(dc_unit_valid_vec[dist_it]),
+
+            .vdist(vdist_vec[dist_it]),
+            .hdist(hdist_vec[dist_it])
+        );
+    end
+endgenerate
 
 
 /*
@@ -85,6 +116,8 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
         lifm_buffer <= 0;
         mt_buffer <= 0;
         st_buffer <= 0;
+
+        dc_unit_enable <= 0;
     end
 
     // IDLE mode operation
@@ -99,6 +132,8 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
         lifm_buffer <= 0;
         mt_buffer <= 0;
         st_buffer <= 0;
+
+        dc_unit_enable <= 0;
     end
 
     // Input mode operation
@@ -111,7 +146,7 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
 
     // Distance calculation mode operation
     else if (mode == RC_DIST_CALC) begin
-        
+        dc_unit_enable <= 1;
     end
 end
 
