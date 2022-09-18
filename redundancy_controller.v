@@ -72,8 +72,8 @@ assign mt_column    = mt_buffer[MAX_LIFM_RSIZ-1];
 
 reg dc_unit_enable;
 wire [0:MAX_LIFM_RSIZ-2]                  dc_unit_valid_vec;
-wire [0:MAX_LIFM_RSIZ-2] [WORD_WIDTH-1:0] hdist_vec;
-wire [0:MAX_LIFM_RSIZ-2] [WORD_WIDTH-1:0] vdist_vec;
+wire [0:MAX_LIFM_RSIZ-2]                  dc_unit_exception_vec;
+wire [0:MAX_LIFM_RSIZ-2] [WORD_WIDTH-1:0] dist_vec;
 
 genvar dist_it;
 
@@ -85,14 +85,16 @@ generate
             .enable_in(dc_unit_enable);
 
             .ke_width(ke_width),
+            .of_width(of_width),
+            .stride(stride),
 
             .idx1(kidx_buffer[dist_it]),
             .idx2(kidx_buffer[dist_it+1]),
 
             .valid(dc_unit_valid_vec[dist_it]),
+            .exception(dc_unit_exception_vec[dist_it]),
 
-            .vdist(vdist_vec[dist_it]),
-            .hdist(hdist_vec[dist_it])
+            .dist(dist_vec[dist_it]),
         );
     end
 endgenerate

@@ -27,7 +27,7 @@ module DistCalc #(
     output valid,      // output valid signal
     output exception,  // exception signal
     
-    output [WORD_WIDTH-1:0] dist  // redundant LIFM element distance (dr)
+    output [DIST_WIDTH-1:0] dist  // redundant LIFM element distance (dr)
 );
 
 // FSM states
@@ -47,8 +47,9 @@ reg [2:0] mode;  // state register
 reg valid_in_reg;    // input valid signal register
 reg valid_out_reg;   // output valid signal register
 
-reg overflow_reg;    // overflow exception register
-reg st_except_reg;   // stride exeption register
+reg overflow_reg;      // overflow exception register
+reg overflow_mac_reg;  // overflow exception on MAC operation
+reg st_except_reg;     // stride exeption register
 
 reg [DIST_WIDTH-1:0] dist_reg;   // redundant LIFM element distance register (dr)
 reg [DIST_WIDTH-1:0] vdist_reg;  // vertical distance register (dv)
@@ -193,7 +194,7 @@ always @(posedge clk or negedge reset_n) begin : DC_MAIN_OP
     else if (mode == DC_OUT) begin
         st_except_reg <= (div_mod1 == 0 && div_mod2 == 0) ? 1'b0 : 1'b1;
         overflow_reg <= overflow_mul;
-        dist_reg <= mul_result + hdist_reg;
+        {overflow_mac_reg, dist_reg} <= mul_result + hdist_reg;
         valid_out_reg <= 1;
     end
 end
