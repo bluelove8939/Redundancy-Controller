@@ -120,7 +120,7 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
     end
 
     // IDLE mode operation
-    else if (mode == RC_IDLE) begin : RC_IDLE_MODE_OP
+    else if (mode == RC_IDLE) begin
         valid_reg <= 0;
 
         rsiz_cnt <= 0;
@@ -136,7 +136,7 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
     end
 
     // Input mode operation
-    else if (mode == RC_INPUT) begin : RC_INPUT_MODE_OP
+    else if (mode == RC_INPUT) begin
         rsiz_cnt <= rsiz_cnt + 1;  // increase row size
 
         kidx_buffer[0:MAX_LIFM_RSIZ-1] <= {kidx,        kidx_buffer[0:MAX_LIFM_RSIZ-2]};  // shift kernel idx buffer
