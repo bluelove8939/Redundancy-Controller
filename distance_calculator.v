@@ -33,8 +33,8 @@ module DistCalc #(
 // FSM states
 localparam [2:0] DC_IDLE        = 3'd0;  // IDLE state
 localparam [2:0] DC_IN          = 3'd1;  // input state
-localparam [2:0] DC_FW_DIV      = 3'd3;  // division with filter width
-localparam [2:0] DC_ST_DIV_INIT = 3'd2;  // division with stride initialization
+localparam [2:0] DC_FW_DIV      = 3'd2;  // division with filter width
+localparam [2:0] DC_ST_DIV_INIT = 3'd3;  // division with stride initialization
 localparam [2:0] DC_ST_DIV      = 3'd4;  // division with stride width
 localparam [2:0] DC_COORD_CALC  = 3'd5;  // vertical/horizontal distance calculation
 localparam [2:0] DC_DIST_CALC   = 3'd6;  // distance calculation
