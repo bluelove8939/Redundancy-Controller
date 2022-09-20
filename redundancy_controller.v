@@ -37,16 +37,9 @@ module RedundancyController #(
 
 
 // FSM states
-localparam [3:0] RC_IDLE       = 4'd0,  // idle state
+localparam [3:0] RC_IDLE       = 4'd0,  // idle mode
                  RC_INPUT      = 4'd1,  // input mode
                  RC_DIST_CALC  = 4'd2,  // distance calculation mode
-                 RC_IT_INIT    = 4'd3,  // making mapping table for redundancy calculation
-                 RC_REDC_DETC  = 4'd4,  // shifting for redundancy calculation
-                 RC_ROW_IT_UD  = 4'd5,  // making mapping table for redundancy calculation
-                 RC_COL_IT_UD  = 4'd6,  // iterator setup
-                 RC_EX_INIT    = 4'd7,  // initialization stage for exchanging 
-                 RC_EXCHANGE   = 4'd8,  // dense IFM calculation mode (compression)
-                 RC_OUTPUT     = 4'd9;  // output mode
 
 reg [3:0] mode;  // FSM state register
 
@@ -54,7 +47,7 @@ reg [3:0] mode;  // FSM state register
 // Registers and buffers
 reg valid_reg;  // output valid signal
 
-reg [WORD_WIDTH-1:0] rsiz_cnt;  // counter for row size of LIFM
+reg [RSIZ_WIDTH-1:0] rsiz_cnt;  // counter for row size of LIFM
 
 reg [MAX_LIFM_RSIZ*WORD_WIDTH-1:0]            kidx_buffer;    // buffer for index of each redundant kernel element
 reg [MAX_LIFM_RSIZ*STEP_RANGE*WORD_WIDTH-1:0] lifm_buffer;    // buffer for lowered input feature map
@@ -66,11 +59,52 @@ assign olifm_column = lifm_buffer[(MAX_LIFM_RSIZ-1)*STEP_RANGE*WORD_WIDTH +: STE
 assign mt_column    = mt_buffer[(MAX_LIFM_RSIZ-1)*STEP_RANGE*STEP_RANGE +: STEP_RANGE*STEP_RANGE];
 
 
+// // Iterators
+// reg [ITER_WIDTH-1:0] src_it, dest_it;      // source/destination iterator
+// reg [WORD_WIDTH-1:0] src_elem, dest_elem;  // source/destination element
+// reg [1:0]            src_st_elem;          // state table element
+
+// wire [ITER_WIDTH-STEP_SHIFT-1:0] src_row_idx, dest_row_idx;
+// wire [STEP_SHIFT-1:0]            src_col_idx, dest_col_idx;
+// wire                             valid_dest;
+// wire                             redc_occured;
+
+// assign src_row_idx  = src_it[ITER_WIDTH-1:STEP_SHIFT+1];    // row index of source
+// assign src_col_idx  = src_it[STEP_SHIFT:0];                 // column index of source
+// assign dest_row_idx = dest_it[ITER_WIDTH-1:STEP_SHIFT+1];   // row index of destination
+// assign dest_col_idx = dest_it[STEP_SHIFT:0];                // column index of destination
+
+// assign valid_dest = ((src_row_idx == MAX_LIFM_RSIZ-1)  || 
+//                      (dest_col_idx >= STEP_RANGE)      || 
+//                      (src_row_idx == dest_row_idx)) ? 1'b0 : 1'b1;  // valid destination condition
+
+// assign redc_occured = (src_elem == dest_elem) ? 1'b1 : 1'b0;  // redundancy occurance condition
+
+
+// // Mapping table entry generator
+// reg [STEP_RANGE-1:0] src_mt_mask;
+// reg [STEP_RANGE-1:0] dest_mt_mask;
+
+
+// // Chain rule detection
+// reg ch_continue;
+// reg [ITER_WIDTH-1:0] ch_it;       // chain iterator
+
+
+// Free list
+reg [FL_RANGE*WORD_WIDTH-1:0] fl_row_buffer;  // buffer for free list rows
+reg [FL_RANGE*WORD_WIDTH-1:0] fl_col_buffer;  // buffer for free list columns
+
+
 // Inatanciation of distance calculation unit
 reg dc_unit_enable;
-wire [MAX_LIFM_RSIZ-2:0]                dc_unit_valid_vec;
-wire [MAX_LIFM_RSIZ-2:0]                dc_unit_exception_vec;
-wire [(MAX_LIFM_RSIZ-1)*DIST_WIDTH-1:0] dist_vec;
+wire [MAX_LIFM_RSIZ-1:0]            dc_unit_valid_vec;
+wire [MAX_LIFM_RSIZ-1:0]            dc_unit_exception_vec;
+wire [MAX_LIFM_RSIZ*DIST_WIDTH-1:0] dist_vec;
+
+assign dc_unit_valid_vec[MAX_LIFM_RSIZ-1] = 0;
+assign dc_unit_exception_vec[MAX_LIFM_RSIZ-1] = 0;
+assign dist_vec[MAX_LIFM_RSIZ*DIST_WIDTH-1:(MAX_LIFM_RSIZ-1)*DIST_WIDTH] = 0;
 
 genvar dist_gvar;
 
@@ -148,18 +182,12 @@ end
 wire [3:0] next, next_idle, next_input, next_dist_calc, next_redc_detc, next_row_it_ud, next_col_it_ud;
 
 assign next_idle      = enable_in                                        ? RC_INPUT      : RC_IDLE;
-assign next_input     = (rsiz_cnt >= rsiz)                               ? RC_DIST_CALC  : RC_INPUT;
+assign next_input     = (rsiz_cnt >= rsiz) || (!enable_in)               ? RC_DIST_CALC  : RC_INPUT;
 assign next_dist_calc = (&dc_unit_valid_vec)                             ? RC_REDC_DETC  : RC_DIST_CALC;
-// assign next_redc_detc =                                                    RC_ROW_IT_UD;
-// assign next_row_it_ud =                                                    RC_COL_IT_UD;
-// assign next_col_it_ud = (s_row_it == rsiz-1 && s_col_it == STEP_RANGE-1) ? RC_EXCHANGE   : RC_REDC_DETC;
 
 assign next = (mode == RC_IDLE)      ? next_idle      :
               (mode == RC_INPUT)     ? next_input     :
               (mode == RC_DIST_CALC) ? next_dist_calc :
-            //   (mode == RC_REDC_DETC) ? next_redc_detc :
-            //   (mode == RC_ROW_IT_UD) ? next_row_it_ud :
-            //   (mode == RC_COL_IT_UD) ? next_col_it_ud :
                                        RC_IDLE;
 
 always @(posedge clk or negedge reset_n) begin : RC_STATE_TRANS
