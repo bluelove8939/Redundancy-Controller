@@ -14,7 +14,7 @@ module FreeListController #(
 
     output [STEP_RANGE-1:0] full,    // indicates whether this controller is full
     output [ITER_WIDTH-1:0] src_it,  // 
-    output [WORD_WIDTH-1:0] src
+    output [WORD_WIDTH-1:0] src 
 );
 
 reg [STEP_RANGE-1:0] full_reg;
