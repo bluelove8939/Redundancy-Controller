@@ -1,4 +1,5 @@
 `include "distance_calculator.v"
+`include "redundancy_checker.v"
 
 /*
  *  Module Name: RedundancyController
@@ -40,6 +41,9 @@ module RedundancyController #(
 localparam [3:0] RC_IDLE       = 4'd0,  // idle mode
                  RC_INPUT      = 4'd1,  // input mode
                  RC_DIST_CALC  = 4'd2,  // distance calculation mode
+                 RC_REDC_DETC  = 4'd3,
+                 RC_REDC_EDIT  = 4'd4,  // edit mapping/state table entry
+                 RC_REDC_ITER  = 4'd5;
 
 reg [3:0] mode;  // FSM state register
 
@@ -57,38 +61,6 @@ reg [MAX_LIFM_RSIZ*STEP_RANGE*2-1:0]          st_buffer;      // buffer for stat
 assign valid        = valid_reg;
 assign olifm_column = lifm_buffer[(MAX_LIFM_RSIZ-1)*STEP_RANGE*WORD_WIDTH +: STEP_RANGE*WORD_WIDTH];
 assign mt_column    = mt_buffer[(MAX_LIFM_RSIZ-1)*STEP_RANGE*STEP_RANGE +: STEP_RANGE*STEP_RANGE];
-
-
-// // Iterators
-// reg [ITER_WIDTH-1:0] src_it, dest_it;      // source/destination iterator
-// reg [WORD_WIDTH-1:0] src_elem, dest_elem;  // source/destination element
-// reg [1:0]            src_st_elem;          // state table element
-
-// wire [ITER_WIDTH-STEP_SHIFT-1:0] src_row_idx, dest_row_idx;
-// wire [STEP_SHIFT-1:0]            src_col_idx, dest_col_idx;
-// wire                             valid_dest;
-// wire                             redc_occured;
-
-// assign src_row_idx  = src_it[ITER_WIDTH-1:STEP_SHIFT+1];    // row index of source
-// assign src_col_idx  = src_it[STEP_SHIFT:0];                 // column index of source
-// assign dest_row_idx = dest_it[ITER_WIDTH-1:STEP_SHIFT+1];   // row index of destination
-// assign dest_col_idx = dest_it[STEP_SHIFT:0];                // column index of destination
-
-// assign valid_dest = ((src_row_idx == MAX_LIFM_RSIZ-1)  || 
-//                      (dest_col_idx >= STEP_RANGE)      || 
-//                      (src_row_idx == dest_row_idx)) ? 1'b0 : 1'b1;  // valid destination condition
-
-// assign redc_occured = (src_elem == dest_elem) ? 1'b1 : 1'b0;  // redundancy occurance condition
-
-
-// // Mapping table entry generator
-// reg [STEP_RANGE-1:0] src_mt_mask;
-// reg [STEP_RANGE-1:0] dest_mt_mask;
-
-
-// // Chain rule detection
-// reg ch_continue;
-// reg [ITER_WIDTH-1:0] ch_it;       // chain iterator
 
 
 // Free list
@@ -127,6 +99,62 @@ generate
 
             .dist(dist_vec[DIST_WIDTH*dist_gvar +: DIST_WIDTH])
         );
+    end
+endgenerate
+
+
+// Instanciation of checker array
+reg checker_enable;
+reg checker_set_idle;
+reg checker_enable_rd;
+reg checker_enable_wt;
+
+wire [STEP_RANGE-1:0] checker_valid_vec;
+
+wire [ITER_WIDTH-1:0] checker_ch_it   [0:STEP_RANGE-1],
+                      checker_src_it  [0:STEP_RANGE-1],
+                      checker_dest_it [0:STEP_RANGE-1];
+
+wire [STEP_RANGE-1:0] checker_src_mt  [0:STEP_RANGE-1];
+wire [1:0]            checker_src_st  [0:STEP_RANGE-1];
+wire [1:0]            checker_dest_st [0:STEP_RANGE-1];
+
+wire                  checker_enable_fl_vec [0:STEP_RANGE];
+wire                  checker_valid_fl_vec  [0:STEP_RANGE];
+
+reg checker_enable_fl;
+wire checker_valid_fl;
+
+assign checker_enable_fl_vec[0] = checker_enable_fl;
+assign checker_valid_fl = checker_valid_fl_vec[STEP_RANGE-1]
+
+genvar checker_gvar;
+
+generate
+    for (checker_gvar = 0; checker_gvar < STEP_RANGE; checker_gvar = checker_gvar + 1) begin
+        RedundancyChecker #(
+            .WORD_WIDTH(WORD_WIDTH), .RSIZ_WIDTH(RSIZ_WIDTH), .ITER_WIDTH(ITER_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ),
+            .STEP_RANGE(STEP_RANGE), .DIST_WIDTH(DIST_WIDTH), .OFFSET(checker_gvar)
+        ) checker_unit (
+            .clk(clk), .reset_n(reset_n), .set_idle(checker_set_idle),
+            .enable_rd(checker_enable_rd), .enable_wt(checker_enable_wt), 
+            .enable_fl(checker_enable_fl_vec[checker_gvar]),
+
+            .rsiz(rsiz), .dist_except(dc_unit_exception_vec), .dist_buffer(dist_vec),
+            .lifm_buffer(lifm_buffer), .mt_buffer(mt_buffer), .st_buffer(st_buffer),
+            
+            .valid(checker_valid_vec[checker_gvar]), .valid_fl(checker_valid_fl_vec[checker_gvar]),
+
+            .n_ch_it(checker_ch_it[checker_gvar]),
+            .n_src_it(checker_src_it[checker_gvar]),
+            .n_dest_it(checker_dest_it[checker_gvar]),
+
+            .n_src_mt(checker_src_mt[checker_gvar]),
+            .n_src_st(checker_src_st[checker_gvar]),
+            .n_dest_st(checker_dest_st[checker_gvar])
+        );
+
+        assign 
     end
 endgenerate
 
@@ -174,20 +202,39 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
         dc_unit_enable <= 1;
     end
 
-    
+    else if (mode == RC_REDC_DETC) begin
+        checker_enable_rd <= 1;
+        checker_enable_wt <= 1;
+    end
+
+    else if (mode == RC_REDC_EDIT) begin
+        for (integer sr_idx = 0; sr_idx < STEP_RANGE; sr_idx = sr_idx + 1) begin
+            mt_buffer[STEP_RANGE*checker_ch_it[ITER_WIDTH*sr_idx +: ITER_WIDTH] +: STEP_RANGE]  <= checker_src_mt[STEP_RANGE*sr_idx +: STEP_RANGE];
+            st_buffer[2*checker_src_it[ITER_WIDTH*sr_idx +: ITER_WIDTH] +: 2]  <= checker_src_st[2*sr_idx +: 2];
+            st_buffer[2*checker_dest_it[ITER_WIDTH*sr_idx +: ITER_WIDTH] +: 2] <= checker_dest_st[2*sr_idx +: 2];
+        end
+    end
+
+    else if (mode == RC_REDC_ITER) begin
+        checker_enable_wt <= 0;
+    end
 end
 
 
 // State Transition
-wire [3:0] next, next_idle, next_input, next_dist_calc, next_redc_detc, next_row_it_ud, next_col_it_ud;
+wire [3:0] next, next_idle, next_input, next_dist_calc, next_redc_detc, next_redc_edit, next_redc_iter;
 
-assign next_idle      = enable_in                                        ? RC_INPUT      : RC_IDLE;
-assign next_input     = (rsiz_cnt >= rsiz) || (!enable_in)               ? RC_DIST_CALC  : RC_INPUT;
-assign next_dist_calc = (&dc_unit_valid_vec)                             ? RC_REDC_DETC  : RC_DIST_CALC;
+assign next_idle      = enable_in                           ? RC_INPUT     : RC_IDLE;
+assign next_input     = (rsiz_cnt >= rsiz) || (!enable_in)  ? RC_DIST_CALC : RC_INPUT;
+assign next_dist_calc = (&dc_unit_valid_vec)                ? RC_REDC_DETC : RC_DIST_CALC;
+assign next_redc_detc = (&checker_valid_vec)                ? RC_REDC_EDIT : RC_REDC_DETC;
+assign next_redc_edit =                                       RC_REDC_ITER;
+assign next_redc_iter =                                       RC_REDC_DETC;
 
 assign next = (mode == RC_IDLE)      ? next_idle      :
               (mode == RC_INPUT)     ? next_input     :
               (mode == RC_DIST_CALC) ? next_dist_calc :
+              (mode == RC_REDC_DETC) ? next_redc_detc :
                                        RC_IDLE;
 
 always @(posedge clk or negedge reset_n) begin : RC_STATE_TRANS
