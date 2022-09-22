@@ -33,21 +33,24 @@ module RedundancyChecker #(
 
     output [STEP_RANGE-1:0] n_src_mt,   // new source mapping table entry (with chain iterator)
     output [1:0]            n_src_st,   // new source state table entry (with source iterator)
-    output [1:0]            n_dest_st   // new destination state table entry (with destination iterator)
+    output [1:0]            n_dest_st,  // new destination state table entry (with destination iterator)
+
+    output [ITER_WIDTH-1:0] fl_out,  // free list entry output (toward free list controller)
+    output [ITER_WIDTH-1:0] nr_out   // no-redundancy element output (toward free list controller)
 );
 
 // FSM states
-localparam [3:0] RCH_IDLE    = 4'd0,   // idle state
-                 RCH_READ    = 4'd1,   // read table entries
-                 RCH_CHECK   = 4'd2,   // checking redundancy
-                 RCH_CH_IT   = 4'd3,   // chain iterator select
-                 RCH_CH_RD   = 4'd4,
-                 RCH_CHAIN   = 4'd4,   // chain detection stage
-                 RCH_WRITE   = 4'd5,   // write new table entries
-                 RCH_INC_IT  = 4'd6,   // increase iterator
-                 RCH_CH_DONE = 4'd8,
-                 RCH_EDIT_INIT    = 4'd9,   // edit with fl
-                 RCH_EDIT_IT = 4'd10;  // edit iteration
+localparam [3:0] RCH_IDLE      = 4'd0,   // idle state
+                 RCH_READ      = 4'd1,   // read table entries
+                 RCH_CHECK     = 4'd2,   // checking redundancy
+                 RCH_CH_IT     = 4'd3,   // chain iterator select
+                 RCH_CH_RD     = 4'd4,
+                 RCH_CHAIN     = 4'd4,   // chain detection stage
+                 RCH_WRITE     = 4'd5,   // write new table entries
+                 RCH_INC_IT    = 4'd6,   // increase iterator
+                 RCH_CH_DONE   = 4'd8,
+                 RCH_EDIT_INIT = 4'd9,   // edit with fl
+                 RCH_EDIT_IT   = 4'd10;  // edit iteration
 
 reg [3:0] mode;
 
@@ -91,17 +94,20 @@ generate
     end
 endgenerate
 
-// Redundancy/chain detection logicfl_counter
+// Redundancy/chain detection logic
 wire redc_oc;
 wire chain_oc;
 
 assign redc_oc  = (dest_valid_vec[0] && (src == dest));
 assign chain_oc = (redc_oc && (src_st == 2'b01) && (src_it[ITER_WIDTH-1:DIST_WIDTH] > 0));
 
-// Free list buffer logic
-reg [MAX_LIFM_RSIZ*ITER_WIDTH-1:0] fl_buffer;
-reg [MAX_LIFM_RSIZ-1:0]            fl_mask;
-reg [WORD_WIDTH-1:0]               fl_counter;
+// Free list buffer and no-redundant value
+reg [ITER_WIDTH-1:0] fl_buffer, nr_buffer;    // free list buffer and no-redundancy buffer
+reg                  fl_mask, nr_mask;        // free list mask and no-redundancy mask
+// reg [WORD_WIDTH-1:0]               fl_counter, nr_counter;  // free list counter and no-redundancy counter
+
+assign fl_out = fl_buffer;
+assign nr_out = nr_buffer;
 
 // Main operations
 always @(posedge clk or negedge reset_n) begin
@@ -130,7 +136,9 @@ always @(posedge clk or negedge reset_n) begin
         dest_valid_vec <= 0;
 
         fl_buffer <= 0;
+        nr_buffer <= 0;
         fl_mask <= 0;
+        nr_mask <= 0;
     end
 
     else if (mode == RCH_IDLE) begin
@@ -164,6 +172,9 @@ always @(posedge clk or negedge reset_n) begin
 
             fl_buffer <= {fl_buffer[(MAX_LIFM_RSIZ-1)*ITER_WIDTH-1:0], dest_it};
             fl_mask   <= {fl_mask[MAX_LIFM_RSIZ-2:0], 1'b1};
+
+            nr_buffer <= 0;
+            nr_mask   <= 1'b0;
         end 
         
         else begin
@@ -172,7 +183,10 @@ always @(posedge clk or negedge reset_n) begin
             n_src_mt_reg  <= (1 << OFFSET);
 
             fl_buffer <= {fl_buffer[(MAX_LIFM_RSIZ-1)*ITER_WIDTH-1:0], 0};
-            fl_mask     <= {fl_mask[MAX_LIFM_RSIZ-2:0], 1'b0};
+            fl_mask   <= {fl_mask[MAX_LIFM_RSIZ-2:0], 1'b0};
+
+            nr_buffer <= (src_st == 2'b01) ? 0    : src_it;
+            nr_mask   <= (src_st == 2'b01) ? 1'b0 : 1'b1;
         end
 
         dest_valid_vec <= {dest_valid_vec[0], dest_valid_vec[MAX_LIFM_RSIZ-1:1]};
@@ -208,22 +222,6 @@ always @(posedge clk or negedge reset_n) begin
 
     else if (mode == RCH_CH_DONE) begin
         done_reg <= 1'b1;
-    end
-
-    else if (mode == RCH_EDIT_INIT) begin
-        done_reg <= 1'b0;
-
-        if (fl_mask[MAX_LIFM_RSIZ-1]) begin
-            src_it     <= fl_buffer[MAX_LIFM_RSIZ*ITER_WIDTH-1:(MAX_LIFM_RSIZ-1)*ITER_WIDTH];
-            fl_counter <= 0;
-        end else begin
-            
-        end
-    end
-
-    else if (mode == RCH_EDIT_RDY) begin
-        dest_it[ITER_WIDTH-1:DIST_WIDTH] <= fl_buffer[MAX_LIFM_RSIZ*ITER_WIDTH-1:(MAX_LIFM_RSIZ-1)*ITER_WIDTH+DIST_WIDTH] + 1;
-        dest_it[DIST_WIDTH-1:0]          <= 0;
     end
 end
 
