@@ -1,5 +1,6 @@
 `include "distance_calculator.v"
 `include "redundancy_checker.v"
+`include "freelist_controller.v"
 
 /*
  *  Module Name: RedundancyController
@@ -104,12 +105,10 @@ endgenerate
 
 
 // Instanciation of checker array
-reg checker_enable;
-reg checker_set_idle;
-reg checker_enable_rd;
-reg checker_enable_wt;
-
-wire [STEP_RANGE-1:0] checker_valid_vec;
+reg checker_enable,
+    checker_set_idle,
+    checker_enable_rd,
+    checker_enable_wt;
 
 wire [ITER_WIDTH-1:0] checker_ch_it   [0:STEP_RANGE-1],
                       checker_src_it  [0:STEP_RANGE-1],
@@ -119,14 +118,16 @@ wire [STEP_RANGE-1:0] checker_src_mt  [0:STEP_RANGE-1];
 wire [1:0]            checker_src_st  [0:STEP_RANGE-1];
 wire [1:0]            checker_dest_st [0:STEP_RANGE-1];
 
-wire                  checker_enable_fl_vec [0:STEP_RANGE];
-wire                  checker_valid_fl_vec  [0:STEP_RANGE];
+wire [STEP_RANGE-1:0] checker_valid_vec,
+                      checker_valid_fl_vec,
+                      checker_done_vec;
+
+wire [STEP_RANGE-1:0] checker_fl_valid, checker_nr_valid;
+wire [ITER_WIDTH-1:0] checker_fl_out [0:STEP_RANGE-1];
+wire [ITER_WIDTH-1:0] checker_nr_out [0:STEP_RANGE-1];
 
 reg checker_enable_fl;
 wire checker_valid_fl;
-
-assign checker_enable_fl_vec[0] = checker_enable_fl;
-assign checker_valid_fl = checker_valid_fl_vec[STEP_RANGE-1]
 
 genvar checker_gvar;
 
@@ -137,13 +138,13 @@ generate
             .STEP_RANGE(STEP_RANGE), .DIST_WIDTH(DIST_WIDTH), .OFFSET(checker_gvar)
         ) checker_unit (
             .clk(clk), .reset_n(reset_n), .set_idle(checker_set_idle),
-            .enable_rd(checker_enable_rd), .enable_wt(checker_enable_wt), 
-            .enable_fl(checker_enable_fl_vec[checker_gvar]),
+            .enable_rd(checker_enable_rd), .enable_wt(checker_enable_wt),
 
             .rsiz(rsiz), .dist_except(dc_unit_exception_vec), .dist_buffer(dist_vec),
             .lifm_buffer(lifm_buffer), .mt_buffer(mt_buffer), .st_buffer(st_buffer),
             
-            .valid(checker_valid_vec[checker_gvar]), .valid_fl(checker_valid_fl_vec[checker_gvar]),
+            .valid(checker_valid_vec[checker_gvar]),
+            .done(checker_done_vec[checker_gvar]),
 
             .n_ch_it(checker_ch_it[checker_gvar]),
             .n_src_it(checker_src_it[checker_gvar]),
@@ -151,7 +152,13 @@ generate
 
             .n_src_mt(checker_src_mt[checker_gvar]),
             .n_src_st(checker_src_st[checker_gvar]),
-            .n_dest_st(checker_dest_st[checker_gvar])
+            .n_dest_st(checker_dest_st[checker_gvar]),
+
+            .fl_valid(checker_fl_valid[checker_gvar]),
+            .nr_valid(checker_nr_valid[checker_gvar]),
+
+            .fl_out(checker_fl_out[checker_gvar]),
+            .nr_out(checker_nr_out[checker_gvar])
         );
 
         assign 
@@ -159,7 +166,41 @@ generate
 endgenerate
 
 
-// Main operation
+// Instanciation of free list controller
+reg flc_set_idle, 
+    flc_enable_in, 
+    flc_write_fin;
+
+wire flc_available, 
+     flc_nxt_exchange, 
+     flc_valid;
+
+wire [ITER_WIDTH-1:0] flc_e_src_it,
+                      flc_e_dest_it;
+
+FreeListController #(
+    .WORD_WIDTH(WORD_WIDTH), .ITER_WIDTH(ITER_WIDTH), .DIST_WIDTH(DIST_WIDTH),
+    .STEP_RANGE(STEP_RANGE), .FL_SIZE(STEP_RANGE), .PTR_WIDTH(DIST_WIDTH)
+) fl_controller (
+    .clk(clk), .reset_n(reset_n), .set_idle(flc_set_idle), 
+    .enable_in(flc_enable_in), .write_fin(flc_write_fin),
+
+    .fl_enable_ch(checker_fl_valid),
+    .fl_it_in(checker_fl_out),
+
+    .nr_enable(checker_nr_valid),
+    .nr_it_in(checker_nr_out),
+
+    .available(flc_available),
+    .nxt_exchange(flc_nxt_exchange),
+    .valid(flc_valid),
+
+    .e_src_it(flc_e_src_it),
+    .e_dest_it(flc_e_dest_it)
+);
+
+
+// Main operation (redundancy checking and writing table entries)
 always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
     // Reset registers and buffers
     if (!reset_n) begin
@@ -221,13 +262,14 @@ always @(posedge clk or negedge reset_n) begin : RC_MAIN_OP
 end
 
 
-// State Transition
+// State Transition of main oeperation
 wire [3:0] next, next_idle, next_input, next_dist_calc, next_redc_detc, next_redc_edit, next_redc_iter;
 
 assign next_idle      = enable_in                           ? RC_INPUT     : RC_IDLE;
 assign next_input     = (rsiz_cnt >= rsiz) || (!enable_in)  ? RC_DIST_CALC : RC_INPUT;
 assign next_dist_calc = (&dc_unit_valid_vec)                ? RC_REDC_DETC : RC_DIST_CALC;
-assign next_redc_detc = (&checker_valid_vec)                ? RC_REDC_EDIT : RC_REDC_DETC;
+assign next_redc_detc = ()
+                        (&checker_valid_vec)                ? RC_REDC_EDIT : RC_REDC_DETC;
 assign next_redc_edit =                                       RC_REDC_ITER;
 assign next_redc_iter =                                       RC_REDC_DETC;
 

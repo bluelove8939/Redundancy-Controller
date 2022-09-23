@@ -12,7 +12,6 @@ module RedundancyChecker #(
     input set_idle,    // set module as idle state
     input enable_rd,   // read enable signal
     input enable_wt,   // write enable signal
-    input enable_fl,   // enable flushing out free list entries
 
     input [RSIZ_WIDTH-1:0] rsiz,  // LIFM row size
 
@@ -23,8 +22,7 @@ module RedundancyChecker #(
     input [MAX_LIFM_RSIZ*STEP_RANGE*STEP_RANGE-1:0] mt_buffer,    // mapping table buffer
     input [MAX_LIFM_RSIZ*STEP_RANGE*2-1:0]          st_buffer,    // state table buffer
 
-    output valid,     // output valid signal (1 iff output value needs to be written to appropriate position)
-    output valid_fl,  // free list entry valid signal
+    output valid,     // output valid signal (1 iff output table entries need to be written to appropriate position)
     output done,      // finished checking redundancy
 
     output [ITER_WIDTH-1:0] n_ch_it,    // new chain position iterator
@@ -35,6 +33,9 @@ module RedundancyChecker #(
     output [1:0]            n_src_st,   // new source state table entry (with source iterator)
     output [1:0]            n_dest_st,  // new destination state table entry (with destination iterator)
 
+    output fl_valid,  // indicates if fl_out is valid
+    output nr_valid,  // indicates if nr_out is valid
+
     output [ITER_WIDTH-1:0] fl_out,  // free list entry output (toward free list controller)
     output [ITER_WIDTH-1:0] nr_out   // no-redundancy element output (toward free list controller)
 );
@@ -44,13 +45,11 @@ localparam [3:0] RCH_IDLE      = 4'd0,   // idle state
                  RCH_READ      = 4'd1,   // read table entries
                  RCH_CHECK     = 4'd2,   // checking redundancy
                  RCH_CH_IT     = 4'd3,   // chain iterator select
-                 RCH_CH_RD     = 4'd4,
+                 RCH_CH_RD     = 4'd4,   // read table entries to check chain
                  RCH_CHAIN     = 4'd4,   // chain detection stage
                  RCH_WRITE     = 4'd5,   // write new table entries
                  RCH_INC_IT    = 4'd6,   // increase iterator
-                 RCH_CH_DONE   = 4'd8,
-                 RCH_EDIT_INIT = 4'd9,   // edit with fl
-                 RCH_EDIT_IT   = 4'd10;  // edit iteration
+                 RCH_CH_DONE   = 4'd8;   // work done!
 
 reg [3:0] mode;
 
@@ -60,7 +59,7 @@ reg [STEP_RANGE-1:0] src_mt, dest_mt;  // mapping table entries
 reg [1:0]            src_st, dest_st;  // state table entries
 
 reg valid_reg;  // indicates whether there's valid output
-reg done_reg;
+reg done_reg;   // indicates whether all of the work is done
 
 reg [ITER_WIDTH-1:0] src_it, dest_it, ch_it;  // iterators
 
@@ -103,8 +102,10 @@ assign chain_oc = (redc_oc && (src_st == 2'b01) && (src_it[ITER_WIDTH-1:DIST_WID
 
 // Free list buffer and no-redundant value
 reg [ITER_WIDTH-1:0] fl_buffer, nr_buffer;    // free list buffer and no-redundancy buffer
-reg                  fl_mask, nr_mask;        // free list mask and no-redundancy mask
-// reg [WORD_WIDTH-1:0]               fl_counter, nr_counter;  // free list counter and no-redundancy counter
+reg                  fl_valid_reg, nr_valid_reg;        // free list mask and no-redundancy mask
+
+assign fl_valid = fl_valid_reg;
+assign nr_valid = nr_valid_reg;
 
 assign fl_out = fl_buffer;
 assign nr_out = nr_buffer;
@@ -137,8 +138,8 @@ always @(posedge clk or negedge reset_n) begin
 
         fl_buffer <= 0;
         nr_buffer <= 0;
-        fl_mask <= 0;
-        nr_mask <= 0;
+        fl_valid_reg <= 0;
+        nr_valid_reg <= 0;
     end
 
     else if (mode == RCH_IDLE) begin
@@ -170,11 +171,11 @@ always @(posedge clk or negedge reset_n) begin
             n_dest_st_reg <= 2'b01;
             n_src_mt_reg  <= (1 << OFFSET) | (1 << dest_it[DIST_WIDTH-1:0]);
 
-            fl_buffer <= {fl_buffer[(MAX_LIFM_RSIZ-1)*ITER_WIDTH-1:0], dest_it};
-            fl_mask   <= {fl_mask[MAX_LIFM_RSIZ-2:0], 1'b1};
+            fl_buffer <= dest_it;
+            fl_valid_reg   <= 1'b1;
 
             nr_buffer <= 0;
-            nr_mask   <= 1'b0;
+            nr_valid_reg   <= 1'b0;
         end 
         
         else begin
@@ -182,11 +183,11 @@ always @(posedge clk or negedge reset_n) begin
             n_dest_st_reg <= 0;
             n_src_mt_reg  <= (1 << OFFSET);
 
-            fl_buffer <= {fl_buffer[(MAX_LIFM_RSIZ-1)*ITER_WIDTH-1:0], 0};
-            fl_mask   <= {fl_mask[MAX_LIFM_RSIZ-2:0], 1'b0};
+            fl_buffer <= 0;
+            fl_valid_reg   <= 1'b0;
 
             nr_buffer <= (src_st == 2'b01) ? 0    : src_it;
-            nr_mask   <= (src_st == 2'b01) ? 1'b0 : 1'b1;
+            nr_valid_reg   <= (src_st == 2'b01) ? 1'b0 : 1'b1;
         end
 
         dest_valid_vec <= {dest_valid_vec[0], dest_valid_vec[MAX_LIFM_RSIZ-1:1]};
@@ -226,16 +227,18 @@ always @(posedge clk or negedge reset_n) begin
 end
 
 // State transition
-wire [3:0] next, next_idle, next_read, next_check, next_ch_it, next_ch_rd, next_chain, next_write, next_inc_it;
+wire [3:0] next, next_idle, next_read, next_check, next_ch_it, next_ch_rd, next_chain, next_write, next_inc_it, next_ch_done;
 
-assign next_idle   = enable_rd                                                       ? RCH_READ   : RCH_IDLE;
-assign next_read   =                                                                   RCH_CHECK;
-assign next_check  = chain_oc                                                        ? RCH_CH_IT  : RCH_WRITE;
-assign next_ch_it  =                                                                   RCH_CH_RD;
-assign next_ch_rd  =                                                                   RCH_CHAIN;
-assign next_chain  = ((ch_it[ITER_WIDTH-1:DIST_WIDTH] == 0) || (ch_st_reg == 2'b10)) ? RCH_WRITE  : RCH_CH_IT;
-assign next_write  = (valid_reg & !enable_wt)                                        ? RCH_INC_IT : RCH_WRITE;
-assign next_inc_it = src_it[ITER_WIDTH-1:DIST_WIDTH] == MAX_LIFM_RSIZ                ? RCH_CHECK  : RCH_CH_DONE;
+assign next_idle    = enable_rd                                                       ? RCH_READ   : RCH_IDLE;     // idle state
+assign next_read    =                                                                   RCH_CHECK;                 // read table entries
+assign next_check   = chain_oc                                                        ? RCH_CH_IT  : RCH_WRITE;    // check redundancy
+assign next_ch_it   =                                                                   RCH_CH_RD;                 // find chain source index
+assign next_ch_rd   =                                                                   RCH_CHAIN;                 // read table entries to identify the chain source
+assign next_chain   = ((ch_it[ITER_WIDTH-1:DIST_WIDTH] == 0) || (ch_st_reg == 2'b10)) ? RCH_WRITE  : RCH_CH_IT;    // if source is identified, write changes
+assign next_write   = (valid_reg & !enable_wt)                                        ? RCH_INC_IT : RCH_WRITE;    // goto next step whether current request is sent
+assign next_inc_it  = src_it[ITER_WIDTH-1:DIST_WIDTH] == MAX_LIFM_RSIZ                ? RCH_CHECK  : RCH_CH_DONE;  // increase iterators and goto next step
+assign next_ch_done = set_idle                                                        ? RCH_IDLE   : RCH_CH_DONE;  // work done!
+
 
 assign next = (set_idle)            ? RCH_IDLE     :
               (mode == RCH_IDLE)    ? next_idle    :
@@ -244,7 +247,10 @@ assign next = (set_idle)            ? RCH_IDLE     :
               (mode == RCH_CH_IT)   ? next_ch_it   :
               (mode == RCH_CH_RD)   ? next_ch_rd   :
               (mode == RCH_CHAIN)   ? next_chain   :
-              (mode == RCH_WRITE)   ? next_write   : RCH_IDLE;
+              (mode == RCH_WRITE)   ? next_write   :
+              (mode == RCH_INC_IT)  ? next_inc_it  :
+              (mode == RCH_CH_DONE) ? next_ch_done : 
+                                      RCH_IDLE;
 
 always @(posedge clk or negedge reset_n) begin : RCH_STATE_TRANS
     if (!reset_n) begin

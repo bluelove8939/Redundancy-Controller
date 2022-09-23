@@ -6,9 +6,11 @@ module FreeListController #(
     parameter FL_SIZE    = 128,
     parameter PTR_WIDTH  = 7
 ) (
-    input clk,
-    input reset_n,
+    input clk,        // clock signal
+    input reset_n,    // asynchronous negative active reset
+    input set_idle,   // set module as idle state
     input enable_in,  // module enable signal (module goes to IDLE state if enable signal is False)
+    input write_fin,  // indicates whether current writing process is finished by redundancy controller
 
     input [STEP_RANGE-1:0]            fl_enable_ch,  // free list entry enable signal
     input [STEP_RANGE*ITER_WIDTH-1:0] fl_it_in,      // free list entry input
@@ -17,10 +19,12 @@ module FreeListController #(
     input [STEP_RANGE*ITER_WIDTH-1:0] nr_it_in,      // no-redundancy element input
 
     output available,  // indicates whether the controller module is busy
-    output valid,      // indicates whether the output is valid
 
-    // output [ITER_WIDTH-1:0] src_it,  // 
-    // output [WORD_WIDTH-1:0] src 
+    output nxt_exchange,  // go onto next exchange (writing finished)
+    output valid,         // indicates whether the exchange is valid
+
+    output [ITER_WIDTH-1:0] e_src_it,  // source index for exchange
+    output [ITER_WIDTH-1:0] e_dest_it  // destination index for exchange
 );
 
 
@@ -30,34 +34,41 @@ localparam [3:0] FLC_IDLE     = 4'd0,
                  FLC_ENABLE   = 4'd2,
                  FLC_FL_SET   = 4'd3,
                  FLC_FL_NXT   = 4'd4,
-                 FLC_EXC_INIT = 4'd5,
+                 FLC_WRITE = 4'd5,
 
 reg [3:0] mode;
 
 
 // Registers and buffers
+reg [ITER_WIDTH-1:0] fl_it_buffer [0:STEP_RANGE-1];
 reg [STEP_RANGE-1:0] fl_current_enables;
 reg [ITER_WIDTH-1:0] fl_buffer [0:FL_SIZE-1];
-reg [PTR_WIDTH-1:0]  fl_w_ptr, fl_r_ptr;
+reg fl_buff_empty_flag;
 
+reg  [PTR_WIDTH-1:0] fl_w_ptr, fl_r_ptr;
+wire [PTR_WIDTH-1:0] fl_w_ptr_nxt, fl_r_ptr_nxt;
+assign fl_w_ptr_nxt = (fl_w_ptr == (FL_SIZE-1)) ? 0 : fl_w_ptr + 1;
+assign fl_r_ptr_nxt = (fl_r_ptr == (FL_SIZE-1)) ? 0 : fl_r_ptr + 1;
+
+wire fl_buff_full;
+assign fl_buff_full = (!fl_buff_empty_flag) && (fl_w_ptr != fl_r_ptr);
+
+reg [STEP_RANGE*ITER_WIDTH-1:0] nr_it_buffer;
 reg [STEP_RANGE-1:0] nr_current_enables;
-reg [ITER_WIDTH-1:0] nr_buffer [0:FL_SIZE-1];
-reg [PTR_WIDTH-1:0]  nr_w_ptr, nr_r_ptr;
 
 reg available_reg;
 reg valid_reg;
+assign available = available_reg;
+assign valid = valid_reg;
 
 reg [ITER_WIDTH-1:0] src_it_reg;
 reg [ITER_WIDTH-1:0] dest_it_reg;
 reg [1:0]            dest_st_reg;
 
-reg [1:0] col_counter;  // pass nr if column counter is less than 2
-
 reg [STEP_RANGE*ITER_WIDTH-1:0] fl_it_in_reg;
 reg [STEP_RANGE*ITER_WIDTH-1:0] nr_it_in_reg;
 
-assign available = available_reg;
-assign valid = valid_reg;
+reg [ITER_WIDTH-1:0] e_src_it_reg, e_dest_it_reg;
 
 
 // Checker enable signal generator
@@ -86,7 +97,7 @@ ValueExtractor #(
     .ELEM_NUM(STEP_RANGE),
     .ELEM_SIZ(ITER_WIDTH)
 ) fl_ve_unit (
-    .in_w(fl_it_in),
+    .in_w(fl_it_buffer),
     .ctrl(fl_enable_out_w),
     .valid(fl_it_valid)
     .out_w(fl_it_target)
@@ -96,7 +107,7 @@ ValueExtractor #(
     .ELEM_NUM(STEP_RANGE),
     .ELEM_SIZ(ITER_WIDTH)
 ) nr_ve_unit (
-    .in_w(nr_it_in),
+    .in_w(nr_it_buffer),
     .ctrl(nr_enable_out_w),
     .valid(nr_it_valid)
     .out_w(nr_it_target)
@@ -104,11 +115,19 @@ ValueExtractor #(
 
 
 // Main operation
+integer i;
+
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
+        for (i = 0; i < STEP_RANGE; i = i + 1) begin
+            fl_buffer[i] <= 0;
+        end
+
         fl_current_enables <= 0;
         fl_buffer <= 0;
+        fl_buff_empty_flag <= 0
 
+        nr_it_buffer <= 0;
         nr_current_enables <= 0;
         nr_buffer <= 0;
 
@@ -122,13 +141,20 @@ always @(posedge clk or negedge reset_n) begin
         fl_it_in_reg <= 0;
         nr_it_in_reg <= 0;
 
-        col_counter <- 0;
+        e_src_it_reg <= 0;
+        e_dest_it_reg <= 0;
     end
 
     else if (mode == FLC_IDLE) begin
+        for (integer i = 0; i < STEP_RANGE; i = i + 1) begin
+            fl_buffer[i] <= 0;
+        end
+
         fl_current_enables <= 0;
         fl_buffer <= 0;
+        fl_buff_empty_flag <= 0;
 
+        nr_it_buffer <= 0;
         nr_current_enables <= 0;
         nr_buffer <= 0;
 
@@ -142,53 +168,68 @@ always @(posedge clk or negedge reset_n) begin
         fl_it_in_reg <= 0;
         nr_it_in_reg <= 0;
 
-        col_counter <- 0;
+        e_src_it_reg <= 0;
+        e_dest_it_reg <= 0;
     end
 
     else if (mode == FLC_RDY) begin
         available_reg <= 1;
+        fl_buff_empty_flag <= 1;
     end
 
     else if (mode == FLC_ENABLE) begin
         available_reg <= 0;
+
+        fl_it_buffer <= fl_it_in;
+        nr_it_buffer <= nr_it_in;
 
         fl_current_enables <= fl_enable_ch;
         nr_current_enables <= nr_enable_ch;
 
         fl_it_in_reg <= fl_it_in;
         nr_it_in_reg <= nr_it_in;
-
-        col_counter <= (col_counter < 3) ? col_counter + 1 : col_counter;
     end
 
     else if (mode == FLC_FL_SET) begin
         if (fl_it_valid) begin
             fl_buffer[fl_w_ptr] <= fl_it_target;
-            fl_current_enables  <= fl_current_enables & (~fl_enable_out_w);
+            fl_w_ptr <= fl_w_ptr_nxt;
         end
 
-        if (col_counter < 2 && nr_it_valid) begin
-            nr_buffer[nr_w_ptr] <= nr_it_target;
-            nr_current_enables  <= nr_current_enables & (~nr_enable_out_w); 
+        if (nr_it_valid) begin
+            if (fl_buffer[fl_r_ptr][ITER_WIDTH-1:DIST_WIDTH] < nr_it_target[ITER_WIDTH-1:DIST_WIDTH]) begin
+                e_src_it_reg <= fl_buffer[fl_r_ptr];
+                e_dest_it_reg <= nr_it_target;
+                fl_r_ptr <= fl_r_ptr + 1;
+                valid <= 1;
+            end else begin
+                valid <= 0;
+            end
         end
     end
 
-    else if (mode == FLC_EXC_INIT) begin
-        
+    else if (mode == FLC_WRITE) begin
+        if (write_fin) begin
+            valid <= 0;
+        end
     end
 end
 
 
 // State trainsition
-wire [3:0] next, next_idle, next_rdy, next_enable, next_fl_set;
+wire [3:0] next, next_idle, next_rdy, next_enable, next_fl_set, next_write;
 
 assign next_idle   =                              FLC_RDY;
 assign next_rdy    = enable_in                  ? FLC_ENABLE : FLC_RDY;
 assign next_enable = !enable_in                 ? FLC_FL_SET;
-assign next_fl_set = fl_it_valid || nr_it_valid ? FLC_FL_SET : FLC_RDY;
+assign next_fl_set = valid                      ? FLC_WRITE  :
+                     fl_it_valid || nr_it_valid ? FLC_FL_SET : FLC_RDY;
+assign next_write  = write_fin                  ? FLC_FL_SET : FLC_WRITE;
 
 assign next = (mode == FLC_IDLE)   ? next_idle   :
               (mode == FLC_ENABLE) ? next_enable :
+              (mode == FLC_FL_SET) ? next_fl_set :
+              (mode == FLC_WRITE)  ? next_write  :
                                      FLC_IDLE;
 
 always @(posedge clk or negedge reset_n) begin
