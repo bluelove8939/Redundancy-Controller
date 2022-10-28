@@ -45,10 +45,38 @@ endgenerate
 endmodule
 
 
-module PrefixAdder #(
+module LFPrefixAdder #(  // Ladner-Fischer adder
+    parameter MASK_WIDTH   = 32,
+    parameter ADDER_DEPTH  = $clog2(MASK_WIDTH)
+) (
+    input [MASK_WIDTH-1:0] mask,
+
+    output [MASK_WIDTH*MASK_WIDTH-1:0] psum
+);
+
+genvar stage;
+genvar aidx;
+
+generate
+    for (stage = 1; stage <= ADDER_DEPTH; stage = stage+1) begin
+        for (aidx = 0; aidx < (MASK_WIDTH / 2); aidx = aidx+1) begin
+            
+        end
+    end
+endgenerate
+    
+endmodule
+
+
+module PAdd #(
     parameter WORD_WIDTH = 1
 ) (
-    ports
+    input [WORD_WIDTH-1:0] a,
+    input [WORD_WIDTH-1:0] b,
+
+    output [2*WORD_WIDTH-1:0] y
 );
+
+assign y = a + b;
     
 endmodule
