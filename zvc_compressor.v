@@ -45,27 +45,56 @@ endgenerate
 endmodule
 
 
-module LFPrefixAdder #(  // Ladner-Fischer adder
-    parameter MASK_WIDTH   = 32,
-    parameter ADDER_DEPTH  = $clog2(MASK_WIDTH)
-) (
-    input [MASK_WIDTH-1:0] mask,
+module LFPrefixAdder32 (  // Ladner-Fischer adder
+    input [31:0] mask,
 
-    output [MASK_WIDTH*MASK_WIDTH-1:0] psum
+    output [1023:0] psum
 );
 
-genvar stage;
-genvar aidx;
+// Stage 1
+wire [1:0] st1_ps0, st1_ps1, st1_ps2, st1_ps3, st1_ps4, st1_ps5, 
+           st1_ps6, st1_ps7, st1_ps8, st1_ps9, st1_ps10, st1_ps11, 
+           st1_ps12, st1_ps13, st1_ps14, st1_ps15;
 
-generate
-    for (stage = 1; stage <= ADDER_DEPTH; stage = stage+1) begin
-        wire []
-        for (aidx = 0; aidx < (MASK_WIDTH / 2); aidx = aidx+1) begin
-            PAdd #(.WORD_WIDTH(stage)) padd_unit (.a(mask[aidx*2]), .b(mask(aidx*2+1)), )
-        end
-    end
-endgenerate
-    
+PAdd st1_pa0(a.(mask[0]),  .b(mask[1]),  st1_ps0);
+PAdd st1_pa0(a.(mask[2]),  .b(mask[3]),  st1_ps1);
+PAdd st1_pa0(a.(mask[4]),  .b(mask[5]),  st1_ps2);
+PAdd st1_pa0(a.(mask[6]),  .b(mask[7]),  st1_ps3);
+PAdd st1_pa0(a.(mask[8]),  .b(mask[9]),  st1_ps4);
+PAdd st1_pa0(a.(mask[10]), .b(mask[11]), st1_ps5);
+PAdd st1_pa0(a.(mask[12]), .b(mask[13]), st1_ps6);
+PAdd st1_pa0(a.(mask[14]), .b(mask[15]), st1_ps7);
+PAdd st1_pa0(a.(mask[16]), .b(mask[17]), st1_ps8);
+PAdd st1_pa0(a.(mask[18]), .b(mask[19]), st1_ps9);
+PAdd st1_pa0(a.(mask[20]), .b(mask[21]), st1_ps10);
+PAdd st1_pa0(a.(mask[22]), .b(mask[23]), st1_ps11);
+PAdd st1_pa0(a.(mask[24]), .b(mask[25]), st1_ps12);
+PAdd st1_pa0(a.(mask[26]), .b(mask[27]), st1_ps13);
+PAdd st1_pa0(a.(mask[28]), .b(mask[29]), st1_ps14);
+PAdd st1_pa0(a.(mask[30]), .b(mask[31]), st1_ps15);
+
+// Stage 2
+wire [1:0] st1_ps0,  st1_ps1,  st1_ps2,  st1_ps3, st1_ps4,  st1_ps5, 
+           st1_ps6,  st1_ps7,  st1_ps8,  st1_ps9, st1_ps10, st1_ps11, 
+           st1_ps12, st1_ps13, st1_ps14, st1_ps15;
+
+PAdd st1_pa0(a.(mask[0]), .b(mask[1]), st1_ps0);
+PAdd st1_pa0(a.(mask[2]), .b(mask[3]), st1_ps1);
+PAdd st1_pa0(a.(mask[4]), .b(mask[5]), st1_ps2);
+PAdd st1_pa0(a.(mask[6]), .b(mask[7]), st1_ps3);
+PAdd st1_pa0(a.(mask[8]), .b(mask[9]), st1_ps4);
+PAdd st1_pa0(a.(mask[10]), .b(mask[11]), st1_ps5);
+PAdd st1_pa0(a.(mask[12]), .b(mask[13]), st1_ps6);
+PAdd st1_pa0(a.(mask[14]), .b(mask[15]), st1_ps7);
+PAdd st1_pa0(a.(mask[16]), .b(mask[17]), st1_ps8);
+PAdd st1_pa0(a.(mask[18]), .b(mask[19]), st1_ps9);
+PAdd st1_pa0(a.(mask[20]), .b(mask[21]), st1_ps10;
+PAdd st1_pa0(a.(mask[22]), .b(mask[23]), st1_ps11);
+PAdd st1_pa0(a.(mask[24]), .b(mask[25]), st1_ps12);
+PAdd st1_pa0(a.(mask[26]), .b(mask[27]), st1_ps13);
+PAdd st1_pa0(a.(mask[28]), .b(mask[29]), st1_ps14);
+PAdd st1_pa0(a.(mask[30]), .b(mask[31]), st1_ps15);
+
 endmodule
 
 
