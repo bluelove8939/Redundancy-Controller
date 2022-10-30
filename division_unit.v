@@ -58,8 +58,8 @@ always @(posedge clk or negedge reset_n) begin
     end
 
     else if (mode == DIV_SHIFT) begin
-        {mod_reg[WORD_WIDTH-1:0], left_op_reg[WORD_WIDTH-1:0]} = {mod_reg[WORD_WIDTH-2:0], left_op_reg[WORD_WIDTH-1:0], 1'b0};
-        quot_reg[WORD_WIDTH-1:0] = {quot_reg[WORD_WIDTH-2:0], 1'b0};
+        {mod_reg[WORD_WIDTH-1:0], left_op_reg[WORD_WIDTH-1:0]} <= {mod_reg[WORD_WIDTH-2:0], left_op_reg[WORD_WIDTH-1:0], 1'b0};
+        quot_reg[WORD_WIDTH-1:0] <= {quot_reg[WORD_WIDTH-2:0], 1'b0};
     end
 
     else if (mode == DIV_MOD_CALC) begin

@@ -59,8 +59,9 @@ genvar aidx;
 
 generate
     for (stage = 1; stage <= ADDER_DEPTH; stage = stage+1) begin
+        wire []
         for (aidx = 0; aidx < (MASK_WIDTH / 2); aidx = aidx+1) begin
-            
+            PAdd #(.WORD_WIDTH(stage)) padd_unit (.a(mask[aidx*2]), .b(mask(aidx*2+1)), )
         end
     end
 endgenerate

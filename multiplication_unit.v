@@ -57,13 +57,13 @@ always @(posedge clk or negedge reset_n) begin
     end
 
     else if (mode == MUL_SHIFT) begin
-        left_op_reg[2*WORD_WIDTH-1:0] = {left_op_reg[2*WORD_WIDTH-2:0], 1'b0};
-        right_op_reg[WORD_WIDTH-1:0]  = {1'b0, right_op_reg[WORD_WIDTH-1:1]};
+        left_op_reg[2*WORD_WIDTH-1:0] <= {left_op_reg[2*WORD_WIDTH-2:0], 1'b0};
+        right_op_reg[WORD_WIDTH-1:0]  <= {1'b0, right_op_reg[WORD_WIDTH-1:1]};
     end
 
     else if (mode == MUL_ADD) begin
         if (right_op_reg[0]) begin
-            result_reg = result_reg + left_op_reg;
+            result_reg <= result_reg + left_op_reg;
         end
 
         counter <= counter + 1;
