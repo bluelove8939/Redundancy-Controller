@@ -1,4 +1,4 @@
-`include "zvc_compressor.v"
+`include "prefix_adder.v"
 
 
 module prefix_sum_tb;
