@@ -15,14 +15,14 @@ reg reset_n;
 reg mode;
 
 reg [31:0] mask;
-wire [1023:0] psum;
-wire [31:0] psum_arr [0:31];
+wire [191:0] psum;
+wire [5:0] psum_arr [0:31];
 
 genvar iter;
 
 generate 
     for(iter = 0; iter < 32; iter=iter+1) begin
-        assign psum_arr[iter] = psum[iter*32+:32];
+        assign psum_arr[iter] = psum[iter*6+:6];
     end
 endgenerate
 
@@ -56,7 +56,8 @@ initial begin : PE_TEST
     # HCLOCK_PS
     reset_n = 1;
 
-    mask = 32'b00001000000010000010000000010011;
+    // mask = 32'b00001000000010000010000000010011;
+    mask = 32'b11111111111111111111111111111111;
     # CLOCK_PS
     # CLOCK_PS
     # CLOCK_PS
