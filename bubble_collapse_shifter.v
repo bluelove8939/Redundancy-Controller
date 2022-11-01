@@ -3,7 +3,7 @@ module BCShifter32 #(  // Bubble-Collapsing Shifter
     parameter DIST_WIDTH    = 7,
     parameter MAX_LIFM_RSIZ = 3
 ) (
-    input [1023:0] psum,
+    input [191:0] psum,
     input [31:0]   mask,
 
     input [32*WORD_WIDTH-1:0]               lifm_line,

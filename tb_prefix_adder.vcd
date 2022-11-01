@@ -1,5 +1,5 @@
 $date
-	Mon Oct 31 18:12:59 2022
+	Tue Nov 01 10:48:33 2022
 $end
 $version
 	Icarus Verilog
@@ -11,100 +11,388 @@ $scope module prefix_sum_tb $end
 $var reg 1 ! clk $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 " \psum_arr[0] [5:0] $end
+$var reg 8 " \psum_arr[0] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 # \psum_arr[1] [5:0] $end
+$var reg 8 # \psum_arr[1] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 $ \psum_arr[2] [5:0] $end
+$var reg 8 $ \psum_arr[2] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 % \psum_arr[3] [5:0] $end
+$var reg 8 % \psum_arr[3] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 & \psum_arr[4] [5:0] $end
+$var reg 8 & \psum_arr[4] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 ' \psum_arr[5] [5:0] $end
+$var reg 8 ' \psum_arr[5] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 ( \psum_arr[6] [5:0] $end
+$var reg 8 ( \psum_arr[6] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 ) \psum_arr[7] [5:0] $end
+$var reg 8 ) \psum_arr[7] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 * \psum_arr[8] [5:0] $end
+$var reg 8 * \psum_arr[8] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 + \psum_arr[9] [5:0] $end
+$var reg 8 + \psum_arr[9] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 , \psum_arr[10] [5:0] $end
+$var reg 8 , \psum_arr[10] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 - \psum_arr[11] [5:0] $end
+$var reg 8 - \psum_arr[11] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 . \psum_arr[12] [5:0] $end
+$var reg 8 . \psum_arr[12] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 / \psum_arr[13] [5:0] $end
+$var reg 8 / \psum_arr[13] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 0 \psum_arr[14] [5:0] $end
+$var reg 8 0 \psum_arr[14] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 1 \psum_arr[15] [5:0] $end
+$var reg 8 1 \psum_arr[15] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 2 \psum_arr[16] [5:0] $end
+$var reg 8 2 \psum_arr[16] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 3 \psum_arr[17] [5:0] $end
+$var reg 8 3 \psum_arr[17] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 4 \psum_arr[18] [5:0] $end
+$var reg 8 4 \psum_arr[18] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 5 \psum_arr[19] [5:0] $end
+$var reg 8 5 \psum_arr[19] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 6 \psum_arr[20] [5:0] $end
+$var reg 8 6 \psum_arr[20] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 7 \psum_arr[21] [5:0] $end
+$var reg 8 7 \psum_arr[21] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 8 \psum_arr[22] [5:0] $end
+$var reg 8 8 \psum_arr[22] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 9 \psum_arr[23] [5:0] $end
+$var reg 8 9 \psum_arr[23] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 : \psum_arr[24] [5:0] $end
+$var reg 8 : \psum_arr[24] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 ; \psum_arr[25] [5:0] $end
+$var reg 8 ; \psum_arr[25] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 < \psum_arr[26] [5:0] $end
+$var reg 8 < \psum_arr[26] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 = \psum_arr[27] [5:0] $end
+$var reg 8 = \psum_arr[27] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 > \psum_arr[28] [5:0] $end
+$var reg 8 > \psum_arr[28] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 ? \psum_arr[29] [5:0] $end
+$var reg 8 ? \psum_arr[29] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 @ \psum_arr[30] [5:0] $end
+$var reg 8 @ \psum_arr[30] [7:0] $end
 $upscope $end
 $scope module prefix_sum_tb $end
-$var reg 6 A \psum_arr[31] [5:0] $end
+$var reg 8 A \psum_arr[31] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 B \psum_arr[32] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 C \psum_arr[33] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 D \psum_arr[34] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 E \psum_arr[35] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 F \psum_arr[36] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 G \psum_arr[37] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 H \psum_arr[38] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 I \psum_arr[39] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 J \psum_arr[40] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 K \psum_arr[41] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 L \psum_arr[42] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 M \psum_arr[43] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 N \psum_arr[44] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 O \psum_arr[45] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 P \psum_arr[46] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 Q \psum_arr[47] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 R \psum_arr[48] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 S \psum_arr[49] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 T \psum_arr[50] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 U \psum_arr[51] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 V \psum_arr[52] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 W \psum_arr[53] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 X \psum_arr[54] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 Y \psum_arr[55] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 Z \psum_arr[56] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 [ \psum_arr[57] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 \ \psum_arr[58] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ] \psum_arr[59] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ^ \psum_arr[60] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 _ \psum_arr[61] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ` \psum_arr[62] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 a \psum_arr[63] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 b \psum_arr[64] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 c \psum_arr[65] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 d \psum_arr[66] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 e \psum_arr[67] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 f \psum_arr[68] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 g \psum_arr[69] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 h \psum_arr[70] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 i \psum_arr[71] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 j \psum_arr[72] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 k \psum_arr[73] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 l \psum_arr[74] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 m \psum_arr[75] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 n \psum_arr[76] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 o \psum_arr[77] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 p \psum_arr[78] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 q \psum_arr[79] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 r \psum_arr[80] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 s \psum_arr[81] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 t \psum_arr[82] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 u \psum_arr[83] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 v \psum_arr[84] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 w \psum_arr[85] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 x \psum_arr[86] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 y \psum_arr[87] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 z \psum_arr[88] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 { \psum_arr[89] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 | \psum_arr[90] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 } \psum_arr[91] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ~ \psum_arr[92] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 !" \psum_arr[93] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 "" \psum_arr[94] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 #" \psum_arr[95] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 $" \psum_arr[96] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 %" \psum_arr[97] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 &" \psum_arr[98] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 '" \psum_arr[99] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 (" \psum_arr[100] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 )" \psum_arr[101] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 *" \psum_arr[102] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 +" \psum_arr[103] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ," \psum_arr[104] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 -" \psum_arr[105] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ." \psum_arr[106] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 /" \psum_arr[107] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 0" \psum_arr[108] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 1" \psum_arr[109] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 2" \psum_arr[110] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 3" \psum_arr[111] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 4" \psum_arr[112] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 5" \psum_arr[113] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 6" \psum_arr[114] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 7" \psum_arr[115] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 8" \psum_arr[116] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 9" \psum_arr[117] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 :" \psum_arr[118] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ;" \psum_arr[119] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 <" \psum_arr[120] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 =" \psum_arr[121] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 >" \psum_arr[122] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 ?" \psum_arr[123] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 @" \psum_arr[124] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 A" \psum_arr[125] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 B" \psum_arr[126] [7:0] $end
+$upscope $end
+$scope module prefix_sum_tb $end
+$var reg 8 C" \psum_arr[127] [7:0] $end
 $upscope $end
 $enddefinitions $end
 $comment Show the parameter values. $end
@@ -112,22 +400,118 @@ $dumpall
 $end
 #0
 $dumpvars
-bx A
-bx @
-bx ?
-bx >
-bx =
-bx <
-bx ;
-bx :
-bx 9
-bx 8
-bx 7
-bx 6
-bx 5
-bx 4
-bx 3
-bx 2
+bx C"
+bx B"
+bx A"
+bx @"
+bx ?"
+bx >"
+bx ="
+bx <"
+bx ;"
+bx :"
+bx 9"
+bx 8"
+bx 7"
+bx 6"
+bx 5"
+bx 4"
+bx 3"
+bx 2"
+bx 1"
+bx 0"
+bx /"
+bx ."
+bx -"
+bx ,"
+bx +"
+bx *"
+bx )"
+bx ("
+bx '"
+bx &"
+bx %"
+bx $"
+bx #"
+bx ""
+bx !"
+bx ~
+bx }
+bx |
+bx {
+bx z
+bx y
+bx x
+bx w
+bx v
+bx u
+bx t
+bx s
+bx r
+bx q
+bx p
+bx o
+bx n
+bx m
+bx l
+bx k
+bx j
+bx i
+bx h
+bx g
+bx f
+bx e
+bx d
+bx c
+bx b
+b0xxxxxxx a
+b0xxxxxxx `
+b0xxxxxxx _
+b0xxxxxxx ^
+b0xxxxxxx ]
+b0xxxxxxx \
+b0xxxxxxx [
+b0xxxxxxx Z
+b0xxxxxxx Y
+b0xxxxxxx X
+b0xxxxxxx W
+b0xxxxxxx V
+b0xxxxxxx U
+b0xxxxxxx T
+b0xxxxxxx S
+b0xxxxxxx R
+b0xxxxxxx Q
+b0xxxxxxx P
+b0xxxxxxx O
+b0xxxxxxx N
+b0xxxxxxx M
+b0xxxxxxx L
+b0xxxxxxx K
+b0xxxxxxx J
+b0xxxxxxx I
+b0xxxxxxx H
+b0xxxxxxx G
+b0xxxxxxx F
+b0xxxxxxx E
+b0xxxxxxx D
+b0xxxxxxx C
+b0xxxxxxx B
+b0xxxxxx A
+b0xxxxxx @
+b0xxxxxx ?
+b0xxxxxx >
+b0xxxxxx =
+b0xxxxxx <
+b0xxxxxx ;
+b0xxxxxx :
+b0xxxxxx 9
+b0xxxxxx 8
+b0xxxxxx 7
+b0xxxxxx 6
+b0xxxxxx 5
+b0xxxxxx 4
+b0xxxxxx 3
+b0xxxxxx 2
 b0xxxxx 1
 b0xxxxx 0
 b0xxxxx /
@@ -149,36 +533,132 @@ $end
 #5000
 1!
 #10000
-b10001 2
-b10010 3
-b10011 4
-b10100 5
-b10101 6
-b10110 7
-b10111 8
-b11000 9
-b11011 <
-b11100 =
-b11001 :
-b11010 ;
-b11101 >
-b11110 ?
-b11111 @
-b100000 A
-b1001 *
-b1010 +
-b1011 ,
-b1100 -
-b1101 .
-b1110 /
-b1111 0
-b10000 1
-b101 &
-b110 '
-b111 (
-b1000 )
-b11 $
-b100 %
+b1101 b
+b1110 c
+b1110 d
+b1110 e
+b1111 f
+b1111 g
+b1111 h
+b1111 i
+b1111 j
+b1111 k
+b1111 l
+b1111 m
+b1111 n
+b10000 o
+b10000 p
+b10000 q
+b10000 r
+b10000 s
+b10000 t
+b10001 u
+b10001 v
+b10001 w
+b10001 x
+b10001 y
+b10001 z
+b10001 {
+b10001 |
+b10010 }
+b10010 ~
+b10010 !"
+b10010 ""
+b10010 #"
+b10011 $"
+b10100 %"
+b10100 &"
+b10100 '"
+b10101 ("
+b10101 )"
+b10101 *"
+b10101 +"
+b10101 ,"
+b10101 -"
+b10101 ."
+b10101 /"
+b10101 0"
+b10110 1"
+b10110 2"
+b10110 3"
+b10110 4"
+b10110 5"
+b10110 6"
+b10111 7"
+b10111 8"
+b10111 9"
+b10111 :"
+b10111 ;"
+b10111 <"
+b10111 ="
+b10111 >"
+b11000 ?"
+b11000 @"
+b11000 A"
+b11000 B"
+b11000 C"
+b111 B
+b1000 C
+b1000 D
+b1000 E
+b1001 F
+b1001 G
+b1001 H
+b1001 I
+b1001 J
+b1001 K
+b1001 L
+b1001 M
+b1001 N
+b1010 O
+b1010 P
+b1010 Q
+b1010 R
+b1010 S
+b1010 T
+b1011 U
+b1011 V
+b1011 W
+b1011 X
+b1011 Y
+b1011 Z
+b1011 [
+b1011 \
+b1100 ]
+b1100 ^
+b1100 _
+b1100 `
+b1100 a
+b100 2
+b100 3
+b100 4
+b101 5
+b101 6
+b101 7
+b101 8
+b101 9
+b101 :
+b101 ;
+b101 <
+b110 =
+b110 >
+b110 ?
+b110 @
+b110 A
+b11 *
+b11 +
+b11 ,
+b11 -
+b11 .
+b100 /
+b100 0
+b100 1
+b11 &
+b11 '
+b11 (
+b11 )
+b10 $
+b10 %
 b10 #
 b1 "
 0!
