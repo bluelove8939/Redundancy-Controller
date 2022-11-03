@@ -17,7 +17,7 @@ assign y[WORD_WIDTH] = carry[WORD_WIDTH];
 genvar witer;
 
 generate
-    for (witer = 0; witer < WORD_WIDTH; witer = witer+1) begin
+    for (witer = 0; witer < WORD_WIDTH; witer = witer+1) begin: FADDERS
         FullAdder fadd(.a(a[witer]), .b(b[witer]), .Cin(carry[witer]), .s(y[witer]), .Cout(carry[witer+1]));
     end
 endgenerate

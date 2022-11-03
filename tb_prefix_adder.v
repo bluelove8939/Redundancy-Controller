@@ -15,7 +15,7 @@ reg reset_n;
 reg mode;
 
 reg [127:0] mask;
-wire [1024:0] psum;
+wire [1023:0] psum;
 wire [7:0] psum_arr [0:127];
 
 genvar iter;
