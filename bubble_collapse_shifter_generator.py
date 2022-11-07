@@ -9,6 +9,9 @@ filename = 'bubble_collapse_shifter'
 
 vgen = VerilogGenerator(dirname=dirname, filename=filename)
 
+# Parameter
+PSUM_WIDTH = 8
+
 # Header
 vgen.register_line(code='''module BCShifter128 #(  // Bubble-Collapsing Shifter
     parameter WORD_WIDTH    = 8,
@@ -32,8 +35,8 @@ genvar line_idx;  // line index iterator
 wire [WORD_WIDTH-1:0]               lifm_line_arr [0:127];
 wire [DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_line_arr   [0:127];
 
-reg [WORD_WIDTH-1:0]               lifm_comp_arr [0:127];
-reg [DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp_arr   [0:127];
+wire [WORD_WIDTH-1:0]               lifm_comp_arr [0:127];
+wire [DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp_arr   [0:127];
 
 generate
     for (line_idx = 0; line_idx < 128; line_idx = line_idx+1) begin
@@ -53,20 +56,20 @@ wire [{numel}*WORD_WIDTH-1:0] i_lifm_l{numel};
 wire [{numel}*WORD_WIDTH-1:0] o_lifm_l{numel};
 wire [{numel}*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] i_mt_l{numel};
 wire [{numel}*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] o_mt_l{numel};
-wire [{math.ceil(math.log2(numel+1))-1}:0] stride_l{numel};
+wire [{math.ceil(math.log2(numel))-1}:0] stride_l{numel};
 
 assign i_lifm_l{numel} = {{lifm_line_arr[{numel-1}], {{{numel-1}*WORD_WIDTH{{1'b0}}}}}};
 assign i_mt_l{numel} = {{mt_line_arr[{numel-1}], {{{numel-1}*DIST_WIDTH*MAX_LIFM_RSIZ{{1'b0}}}}}};
-assign stride_l{numel} = psum[{numel-1}*PSUM_WIDTH+:{math.ceil(math.log2(numel+1))}];
+assign stride_l{numel} = psum[{(numel-1)*PSUM_WIDTH+math.ceil(math.log2(numel))-1}:{(numel-1)*PSUM_WIDTH}];
 
 VShifter #(
-    .WORD_WIDTH(WORD_WIDTH), .NUMEL({numel}), .NUMEL_LOG({math.ceil(math.log2(numel+1))})
+    .WORD_WIDTH(WORD_WIDTH), .NUMEL({numel}), .NUMEL_LOG({math.ceil(math.log2(numel))})
 ) vs_lifm_{numel} (
     .i_vec(i_lifm_l{numel}), .stride(stride_l{numel}), .o_vec(o_lifm_l{numel})
 );
 
 VShifter #(
-    .WORD_WIDTH(DIST_WIDTH*MAX_LIFM_RSIZ), .NUMEL({numel}), .NUMEL_LOG({math.ceil(math.log2(numel+1))})
+    .WORD_WIDTH(DIST_WIDTH*MAX_LIFM_RSIZ), .NUMEL({numel}), .NUMEL_LOG({math.ceil(math.log2(numel))})
 ) vs_mt_{numel} (
     .i_vec(i_mt_l{numel}), .stride(stride_l{numel}), .o_vec(o_mt_l{numel})
 );""")
@@ -74,8 +77,8 @@ VShifter #(
 # Generate output signal
 for idx in range(128):
     vgen.register_line(code=f"""
-assign lifm_comp[{idx}] = {' | '.join([f'o_lifm_l{numel}[{idx}*WORD_WIDTH+:WORD_WIDTH]' for numel in range(max(idx+1, 2), 129, 1)])};
-assign mt_comp[{idx}]   = {' | '.join([f'o_mt_l{numel}[{idx}*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ]' for numel in range(max(idx+1, 2), 129, 1)])};""")
+assign lifm_comp_arr[{idx}] = {' | '.join([f'o_lifm_l{numel}[{idx}*WORD_WIDTH+:WORD_WIDTH]' for numel in range(max(idx+1, 2), 129, 1)])};
+assign mt_comp_arr[{idx}]   = {' | '.join([f'o_mt_l{numel}[{idx}*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ]' for numel in range(max(idx+1, 2), 129, 1)])};""")
 
 # Tail
 vgen.register_line(code='''

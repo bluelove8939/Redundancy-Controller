@@ -65,8 +65,10 @@ class VerilogGenerator(object):
                     self.enames[self.linenum[eidx]].append(f"{ename}  {efile}")
 
         if remove_tmpfile:
-            os.remove(os.path.join(self.dirname, self.ofilename))
-            os.remove(os.path.join(self.dirname, self.clog_filename))
+            if os.path.isfile(os.path.join(self.dirname, self.ofilename)):
+                os.remove(os.path.join(self.dirname, self.ofilename))
+            if os.path.isfile(os.path.join(self.dirname, self.clog_filename)):
+                os.remove(os.path.join(self.dirname, self.clog_filename))
 
     def print_result(self):
         print(f"Compile Configs")

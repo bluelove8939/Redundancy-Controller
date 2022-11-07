@@ -27,7 +27,7 @@ wire [LINE_SIZE*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp;
 wire [WORD_WIDTH-1:0]               lifm_comp_arr [0:LINE_SIZE-1];
 wire [DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp_arr   [0:LINE_SIZE-1];
 
-ZVCompressor #(.WORD_WIDTH(WORD_WIDTH), .LINE_SIZE(LINE_SIZE), .DIST_WIDTH(DIST_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ)
+ZVCompressor128 #(.WORD_WIDTH(WORD_WIDTH), .DIST_WIDTH(DIST_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ)
 ) zvc_compr (
     .clk(clk), .reset_n(reset_n),
     .lifm_line(lifm_line), .mt_line(mt_line),
@@ -70,9 +70,18 @@ initial begin : COMPR_TEST
     # HCLOCK_PS
     reset_n = 1;
 
+    for (integer i = 0; i < LINE_SIZE; i=i+1) begin
+        lifm_line[i*WORD_WIDTH+:WORD_WIDTH]  = 0;
+        mt_line[i*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 0;
+    end
+
     lifm_line[3*WORD_WIDTH+:WORD_WIDTH]  = 13;
     lifm_line[8*WORD_WIDTH+:WORD_WIDTH]  = 47;
     lifm_line[15*WORD_WIDTH+:WORD_WIDTH] = 22;
+
+    mt_line[3*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
+    mt_line[8*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
+    mt_line[15*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
 
     # CLOCK_PS
     # CLOCK_PS
