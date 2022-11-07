@@ -76,5 +76,5 @@ class VerilogGenerator(object):
         print(f"- filename: {self.filename}\n")
 
         for el in self.elinenum:
-            enn = '\n'.join(f'  [{ei + 1}] {en}' for ei, en in enumerate(self.enames[el]))
-            print(f"ln {el:4d}\n{enn}", end='\n')
+            enn = '\n'.join(f'  [{ei + 1}] {en}' for ei, en in enumerate(self.enames[el][:min(len(self.enames[el]), 10)]))
+            print(f"ln {el:4d}\n{enn}" + ('' if len(self.enames[el]) <= 10 else f'\n  ({len(self.enames[el])-10} more errors occurred)'), end='\n')

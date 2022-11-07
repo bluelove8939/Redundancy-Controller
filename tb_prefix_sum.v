@@ -1,4 +1,4 @@
-`include "prefix_adder.v"
+`include "prefix_sum.v"
 
 
 module prefix_sum_tb;
@@ -42,7 +42,7 @@ end
 
 // PE test
 initial begin : PE_TEST
-    $dumpfile("tb_prefix_adder.vcd");
+    $dumpfile("tb_prefix_sum.vcd");
     $dumpvars(-1, clk);
     for (integer i = 0; i < 128; i=i+1) begin
         $dumpvars(-1, psum_arr[i]);
