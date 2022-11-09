@@ -40,6 +40,9 @@ generate
     end
 endgenerate
 
+assign lifm_comp = lifm_comp_reg;
+assign mt_comp = mt_comp_reg;
+
 
 // Shifter 2
 wire [2*WORD_WIDTH-1:0] i_lifm_l2;

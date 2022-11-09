@@ -54,6 +54,9 @@ generate
         assign mt_comp_wire[DIST_WIDTH*MAX_LIFM_RSIZ*line_idx+:DIST_WIDTH*MAX_LIFM_RSIZ] = mt_comp_arr[line_idx];
     end
 endgenerate
+
+assign lifm_comp = lifm_comp_reg;
+assign mt_comp = mt_comp_reg;
 ''')
 
 # Generate shifters
