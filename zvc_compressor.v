@@ -22,9 +22,11 @@ wire [1023:0] psum;
 
 reg [128*WORD_WIDTH-1:0]               lifm_pipe1;  // pipeline registers: LOWERED IFM
 reg [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_pipe1;    // pipeline registers: MAPPING TABLE
-reg [127:0]                            mask_pipe1;  // pipeline registers: MASK
 
-LFPrefixSum128 padder(.clk(clk), .reset_n(reset_n), .mask(mask), .psum(psum));
+reg [1023:0] psum_pipe1;  // pipeline registers: PREFIX SUM
+reg [127:0]  mask_pipe1;  // pipeline registers: MASK
+
+LFPrefixSum128 padder(.mask(mask), .psum(psum));
 
 genvar line_idx;
 generate
@@ -37,10 +39,12 @@ endgenerate
 wire [128*WORD_WIDTH-1:0]               lifm_comp_wo;
 wire [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp_wo;
 
+reg [128*WORD_WIDTH-1:0]               lifm_pipe2;  // pipeline registers: LOWERED IFM
+reg [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_pipe2;    // pipeline registers: MAPPING TABLE
+
 BCShifter128 #(
     .WORD_WIDTH(WORD_WIDTH), .PSUM_WIDTH(128), .DIST_WIDTH(DIST_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ)
 ) bc_shift(
-    .clk(clk), .reset_n(reset_n),
     .mask(mask_pipe1), .psum(psum), .lifm_line(lifm_pipe1), .mt_line(mt_pipe1),
     .lifm_comp(lifm_comp_wo), .mt_comp(mt_comp_wo)
 );
@@ -50,17 +54,25 @@ always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
         lifm_pipe1 <= 0;
         mt_pipe1 <= 0;
+        psum_pipe1 <= 0;
         mask_pipe1 <= 0;
+
+        lifm_pipe2 <= 0;
+        mt_pipe2 <= 0;
     end
 
     else begin
         lifm_pipe1 <= lifm_line;
         mt_pipe1 <= mt_line;
+        psum_pipe1 <= psum;
         mask_pipe1 <= mask;
+
+        lifm_pipe2 <= lifm_comp_wo;
+        mt_pipe2 <= mt_comp_wo;
     end
 end
 
-assign lifm_comp = lifm_comp_wo;
-assign mt_comp = mt_comp_wo;
+assign lifm_comp = lifm_pipe2;
+assign mt_comp = mt_pipe2;
     
 endmodule

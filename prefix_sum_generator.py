@@ -16,18 +16,10 @@ vgen.register_line(code='''
 `include "nodeadder.v"
 
 module LFPrefixSum128 (  // Ladner-Fischer
-    input clk,
-    input reset_n,
     input [127:0] mask,
 
     output [1023:0] psum
 );
-
-reg [1023:0] psum_reg;
-wire [1023:0] psum_wire;
-
-assign psum = psum_reg;
-
 ''')
 
 # Generate shifters
@@ -49,18 +41,9 @@ wire [{stage}:0] st{stage} [0:127];\n""")
 # Generate output signal
 vgen.register_line(code='// Output link')
 for out_iter in range(128):
-    vgen.register_line(code=f"assign psum_wire[{out_iter*8+7}:{out_iter*8}] = st7[{out_iter}];")
+    vgen.register_line(code=f"assign psum[{out_iter*8+7}:{out_iter*8}] = st7[{out_iter}];")
 
 vgen.register_line(code='''
-
-always @(posedge clk or negedge reset_n) begin
-    if (!reset_n) begin
-        psum_reg <= 0;
-    end else begin
-        psum_reg <= psum_wire;
-    end
-end
-
 endmodule''')
 
 

@@ -84,6 +84,20 @@ initial begin : COMPR_TEST
     mt_line[15*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
 
     # CLOCK_PS
+
+    for (integer i = 0; i < LINE_SIZE; i=i+1) begin
+        lifm_line[i*WORD_WIDTH+:WORD_WIDTH]  = 0;
+        mt_line[i*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 0;
+    end
+
+    lifm_line[5*WORD_WIDTH+:WORD_WIDTH]  = 15;
+    lifm_line[75*WORD_WIDTH+:WORD_WIDTH]  = 35;
+    lifm_line[32*WORD_WIDTH+:WORD_WIDTH] = 74;
+
+    mt_line[5*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
+    mt_line[75*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
+    mt_line[32*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
+
     # CLOCK_PS
     # CLOCK_PS
     # CLOCK_PS
