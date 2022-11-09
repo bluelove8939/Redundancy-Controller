@@ -33,6 +33,11 @@ class VerilogGenerator(object):
             self.linenum.append(lnum + lidx)
 
     def compile(self, save_log=True, remove_output=True):
+        print(f"Compile Configs")
+        print(f"- dirname:  {self.dirname if self.dirname != os.curdir else '(current directory)'}")
+        print(f"- filename: {self.filename}\n")
+        print("starting compile...")
+
         with open(os.path.join(self.dirname, self.vfilename), 'wt') as file:
             file.write('\n'.join(self.content))
 
@@ -71,8 +76,10 @@ class VerilogGenerator(object):
             if os.path.isfile(os.path.join(self.dirname, self.ofilename)):
                 os.remove(os.path.join(self.dirname, self.ofilename))
 
+        print("compile done\n")
+
     def print_result(self):
-        print(f"Compile Configs")
+        print(f"Compile Results")
         print(f"- dirname:  {self.dirname if self.dirname != os.curdir else '(current directory)'}")
         print(f"- filename: {self.filename}\n")
 

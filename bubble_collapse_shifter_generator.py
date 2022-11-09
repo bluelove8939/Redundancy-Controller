@@ -118,7 +118,23 @@ module VShifter #(
     output [WORD_WIDTH*NUMEL-1:0] o_vec
 );
 
-assign o_vec = i_vec >> (stride * WORD_WIDTH);
+wire [NUMEL-1:0] i_bp [0:WORD_WIDTH];  // input bitplanes
+wire [NUMEL-1:0] o_bp [0:WORD_WIDTH];  // output bitplanes
+
+genvar bp_iter;  // bitplane iterator
+genvar el_iter;  // element iterator
+generate
+    for (bp_iter = 0; bp_iter < WORD_WIDTH; bp_iter = bp_iter+1) begin
+        for (el_iter = 0; el_iter < NUMEL; el_iter = el_iter+1) begin
+            assign i_bp[bp_iter][el_iter] = i_vec[el_iter*WORD_WIDTH+bp_iter];
+            assign o_vec[el_iter*WORD_WIDTH+bp_iter] = o_bp[bp_iter][el_iter];
+        end
+
+        assign o_bp[bp_iter] = i_bp[bp_iter] >> stride;
+    end
+endgenerate
+
+// assign o_vec = i_vec >> (stride * WORD_WIDTH);
     
 endmodule''')
 
