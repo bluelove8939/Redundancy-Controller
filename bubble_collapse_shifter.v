@@ -4,6 +4,8 @@ module BCShifter128 #(  // Bubble-Collapsing Shifter
     parameter DIST_WIDTH    = 7,
     parameter MAX_LIFM_RSIZ = 4
 ) (
+    input clk,
+    input reset_n,
     input [1023:0] psum,
     input [127:0]  mask,
 
@@ -16,6 +18,12 @@ module BCShifter128 #(  // Bubble-Collapsing Shifter
 
 genvar line_idx;  // line index iterator
 
+wire [128*WORD_WIDTH-1:0]               lifm_comp_wire;
+wire [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp_wire;
+
+reg [128*WORD_WIDTH-1:0]               lifm_comp_reg;
+reg [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp_reg; 
+
 // Generate array connected with input and output ports
 wire [WORD_WIDTH-1:0]               lifm_line_arr [0:127];
 wire [DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_line_arr   [0:127];
@@ -27,8 +35,8 @@ generate
     for (line_idx = 0; line_idx < 128; line_idx = line_idx+1) begin
         assign lifm_line_arr[line_idx] = lifm_line[WORD_WIDTH*line_idx+:WORD_WIDTH];
         assign mt_line_arr[line_idx] = mt_line[DIST_WIDTH*MAX_LIFM_RSIZ*line_idx+:DIST_WIDTH*MAX_LIFM_RSIZ];
-        assign lifm_comp[WORD_WIDTH*line_idx+:WORD_WIDTH] = lifm_comp_arr[line_idx];
-        assign mt_comp[DIST_WIDTH*MAX_LIFM_RSIZ*line_idx+:DIST_WIDTH*MAX_LIFM_RSIZ] = mt_comp_arr[line_idx];
+        assign lifm_comp_wire[WORD_WIDTH*line_idx+:WORD_WIDTH] = lifm_comp_arr[line_idx];
+        assign mt_comp_wire[DIST_WIDTH*MAX_LIFM_RSIZ*line_idx+:DIST_WIDTH*MAX_LIFM_RSIZ] = mt_comp_arr[line_idx];
     end
 endgenerate
 
@@ -3337,6 +3345,17 @@ assign mt_comp_arr[126]   = o_mt_l127[126*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*M
 
 assign lifm_comp_arr[127] = o_lifm_l128[127*WORD_WIDTH+:WORD_WIDTH];
 assign mt_comp_arr[127]   = o_mt_l128[127*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ];
+
+
+always @(posedge clk or negedge reset_n) begin
+    if (!reset_n) begin
+        lifm_comp_reg <= 0;
+        mt_comp_reg <= 0;
+    end else begin
+        lifm_comp_reg <= lifm_comp_wire;
+        mt_comp_reg <= mt_comp_wire;
+    end
+end
 
 endmodule
 

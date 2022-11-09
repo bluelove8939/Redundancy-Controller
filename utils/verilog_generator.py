@@ -32,14 +32,14 @@ class VerilogGenerator(object):
             self.content.append(line)
             self.linenum.append(lnum + lidx)
 
-    def compile(self, remove_tmpfile=True):
+    def compile(self, save_log=True, remove_output=True):
         with open(os.path.join(self.dirname, self.vfilename), 'wt') as file:
             file.write('\n'.join(self.content))
 
         with open(os.path.join(self.dirname, self.clog_filename), 'wt') as file:
             compile_result = subprocess.run(
-                f"iverilog -o \"{os.path.join(self.dirname, self.ofilename)}\" {os.path.join(self.dirname, self.vfilename)}", stdout=file,
-                stderr=file)
+                f"iverilog -o \"{os.path.join(self.dirname, self.ofilename)}\" {os.path.join(self.dirname, self.vfilename)}",
+                stdout=file, stderr=file)
 
         self.elinenum = []
         self.enames = {}
@@ -64,11 +64,12 @@ class VerilogGenerator(object):
                 if ename not in self.enames[self.linenum[eidx]]:
                     self.enames[self.linenum[eidx]].append(f"{ename}  {efile}")
 
-        if remove_tmpfile:
-            if os.path.isfile(os.path.join(self.dirname, self.ofilename)):
-                os.remove(os.path.join(self.dirname, self.ofilename))
+        if not save_log:
             if os.path.isfile(os.path.join(self.dirname, self.clog_filename)):
                 os.remove(os.path.join(self.dirname, self.clog_filename))
+        if remove_output:
+            if os.path.isfile(os.path.join(self.dirname, self.ofilename)):
+                os.remove(os.path.join(self.dirname, self.ofilename))
 
     def print_result(self):
         print(f"Compile Configs")
