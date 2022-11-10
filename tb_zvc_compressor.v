@@ -62,7 +62,7 @@ initial begin : COMPR_TEST
         $dumpvars(-1, lifm_comp_arr[i]);
     end
 
-    $monitor("clk: %3d  lifm_comp: %b\n", clk_counter, lifm_comp);
+    $monitor("clk_cnt: %3d  lifm_comp: %b\n", clk_counter, lifm_comp);
     
     reset_n = 1;
     # HCLOCK_PS
@@ -84,6 +84,7 @@ initial begin : COMPR_TEST
     mt_line[15*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
 
     # CLOCK_PS
+    # CLOCK_PS
 
     for (integer i = 0; i < LINE_SIZE; i=i+1) begin
         lifm_line[i*WORD_WIDTH+:WORD_WIDTH]  = 0;
@@ -91,15 +92,13 @@ initial begin : COMPR_TEST
     end
 
     lifm_line[5*WORD_WIDTH+:WORD_WIDTH]  = 15;
-    lifm_line[75*WORD_WIDTH+:WORD_WIDTH]  = 35;
+    lifm_line[75*WORD_WIDTH+:WORD_WIDTH] = 35;
     lifm_line[32*WORD_WIDTH+:WORD_WIDTH] = 74;
 
     mt_line[5*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
     mt_line[75*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
     mt_line[32*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ] = 1;
 
-    # CLOCK_PS
-    # CLOCK_PS
     # CLOCK_PS
     # CLOCK_PS
 

@@ -2,3 +2,4 @@ utils/__pycache__/
 *.vcd
 *.vvp
 *.log
+tmp.v

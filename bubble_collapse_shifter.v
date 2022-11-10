@@ -5,7 +5,6 @@ module BCShifter128 #(  // Bubble-Collapsing Shifter
     parameter MAX_LIFM_RSIZ = 4
 ) (
     input [1023:0] psum,
-    input [127:0]  mask,
 
     input [128*WORD_WIDTH-1:0]               lifm_line,
     input [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_line,
