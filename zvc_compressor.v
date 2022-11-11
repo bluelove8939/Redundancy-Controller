@@ -41,7 +41,7 @@ generate
 endgenerate
 
 // Generating prefix sum of mask
-LFPrefixSum128 psum_unit(.mask(mask), .psum(psum));
+LFPrefixSum128 #(.PSUM_WIDTH(PSUM_WIDTH)) psum_unit(.mask(mask), .psum(psum));
 
 // Generate compressed lowered input feature map and mapping table
 BCShifter128 #(
