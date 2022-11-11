@@ -9,16 +9,18 @@ filename = 'prefix_sum'
 vgen = VerilogGenerator(dirname=dirname, filename=filename)
 
 # Parameter
-PSUM_WIDTH = 8
+PSUM_WIDTH = 7
 
 # Header
 vgen.register_line(code='''
 `include "nodeadder.v"
 
-module LFPrefixSum128 (  // Ladner-Fischer
+module LFPrefixSum128 #(
+    parameter PSUM_WIDTH = 7
+) (  // Ladner-Fischer
     input [127:0] mask,
 
-    output [1023:0] psum
+    output [128*PSUM_WIDTH-1:0] psum
 );
 ''')
 
@@ -41,7 +43,7 @@ wire [{stage}:0] st{stage} [0:127];\n""")
 # Generate output signal
 vgen.register_line(code='// Output link')
 for out_iter in range(128):
-    vgen.register_line(code=f"assign psum[{out_iter*8+7}:{out_iter*8}] = st7[{out_iter}];")
+    vgen.register_line(code=f"assign psum[{(out_iter+1)*PSUM_WIDTH-1}:{out_iter*PSUM_WIDTH}] = st7[{out_iter}];")
 
 vgen.register_line(code='''
 endmodule''')

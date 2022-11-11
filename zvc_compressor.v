@@ -3,6 +3,7 @@
 
 module ZVCompressor128 #(
     parameter WORD_WIDTH    = 8,
+    parameter PSUM_WIDTH    = 7,
     parameter DIST_WIDTH    = 7,
     parameter MAX_LIFM_RSIZ = 4    // maximum row size of LIFM
 ) (
@@ -18,11 +19,11 @@ module ZVCompressor128 #(
 
 // Pipeline1: Generate zero mask and bubble index with prefix adder
 wire [127:0]  mask;  // input port of prefix sum unit (psum unit)
-wire [1023:0] psum;  // output port of prefix sum unit (psum unit)
+wire [128*PSUM_WIDTH-1:0] psum;  // output port of prefix sum unit (psum unit)
 
 reg [128*WORD_WIDTH-1:0]               lifm_pipe1;  // pipeline registers: LOWERED IFM
 reg [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_pipe1;    // pipeline registers: MAPPING TABLE
-reg [1023:0]                           psum_pipe1;  // pipeline registers: PREFIX SUM
+reg [128*PSUM_WIDTH-1:0]               psum_pipe1;  // pipeline registers: PREFIX SUM
 
 // Pipeline2: Bubble-collapsing Shifter
 wire [128*WORD_WIDTH-1:0]               lifm_comp_wo;  // output port of block collapse shifter ()
@@ -44,7 +45,7 @@ LFPrefixSum128 psum_unit(.mask(mask), .psum(psum));
 
 // Generate compressed lowered input feature map and mapping table
 BCShifter128 #(
-    .WORD_WIDTH(WORD_WIDTH), .PSUM_WIDTH(128), .DIST_WIDTH(DIST_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ)
+    .WORD_WIDTH(WORD_WIDTH), .PSUM_WIDTH(PSUM_WIDTH), .DIST_WIDTH(DIST_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ)
 ) bc_shift(
     .psum(psum_pipe1), .lifm_line(lifm_pipe1), .mt_line(mt_pipe1),
     .lifm_comp(lifm_comp_wo), .mt_comp(mt_comp_wo)

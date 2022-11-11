@@ -10,16 +10,16 @@ filename = 'bubble_collapse_shifter'
 vgen = VerilogGenerator(dirname=dirname, filename=filename)
 
 # Parameter
-PSUM_WIDTH = 8
+PSUM_WIDTH = 7
 
 # Header
 vgen.register_line(code='''module BCShifter128 #(  // Bubble-Collapsing Shifter
     parameter WORD_WIDTH    = 8,
-    parameter PSUM_WIDTH    = 8,
+    parameter PSUM_WIDTH    = 7,
     parameter DIST_WIDTH    = 7,
     parameter MAX_LIFM_RSIZ = 4
 ) (
-    input [1023:0] psum,
+    input [128*PSUM_WIDTH-1:0] psum,
 
     input [128*WORD_WIDTH-1:0]               lifm_line,
     input [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_line,
@@ -44,6 +44,12 @@ generate
         assign mt_comp[DIST_WIDTH*MAX_LIFM_RSIZ*line_idx+:DIST_WIDTH*MAX_LIFM_RSIZ] = mt_comp_arr[line_idx];
     end
 endgenerate
+
+wire [WORD_WIDTH-1:0] o_lifm_l1;
+wire [DIST_WIDTH*MAX_LIFM_RSIZ-1:0] o_mt_l1;
+
+assign o_lifm_l1 = lifm_line[WORD_WIDTH-1:0];
+assign o_mt_l1 = mt_line[DIST_WIDTH*MAX_LIFM_RSIZ-1:0];
 ''')
 
 # Generate shifters
@@ -75,8 +81,8 @@ VShifter #(
 # Generate output signal
 for idx in range(128):
     vgen.register_line(code=f"""
-assign lifm_comp_arr[{idx}] = {' | '.join([f'o_lifm_l{numel}[{idx}*WORD_WIDTH+:WORD_WIDTH]' for numel in range(max(idx+1, 2), 129, 1)])};
-assign mt_comp_arr[{idx}]   = {' | '.join([f'o_mt_l{numel}[{idx}*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ]' for numel in range(max(idx+1, 2), 129, 1)])};""")
+assign lifm_comp_arr[{idx}] = {' | '.join([f'o_lifm_l{numel}[{idx}*WORD_WIDTH+:WORD_WIDTH]' for numel in range(max(idx+1, 1), 129, 1)])};
+assign mt_comp_arr[{idx}]   = {' | '.join([f'o_mt_l{numel}[{idx}*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ]' for numel in range(max(idx+1, 1), 129, 1)])};""")
 
 # Tail
 vgen.register_line(code='''
