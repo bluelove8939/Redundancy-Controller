@@ -15,14 +15,14 @@ reg reset_n;
 reg mode;
 
 reg [127:0] mask;
-wire [1023:0] psum;
-wire [7:0] psum_arr [0:127];
+wire [895:0] psum;
+wire [6:0] psum_arr [0:127];
 
 genvar iter;
 
 generate 
     for(iter = 0; iter < 128; iter=iter+1) begin
-        assign psum_arr[iter] = psum[iter*8+:8];
+        assign psum_arr[iter] = psum[iter*7+:7];
     end
 endgenerate
 

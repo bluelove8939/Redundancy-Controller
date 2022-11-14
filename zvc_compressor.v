@@ -74,5 +74,8 @@ end
 
 assign lifm_comp = lifm_pipe2;
 assign mt_comp = mt_pipe2;
+
+// assign lifm_comp = lifm_comp_wo;
+// assign mt_comp = mt_comp_wo;
     
 endmodule
