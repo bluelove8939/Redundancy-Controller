@@ -1,5 +1,6 @@
 `include "prefix_sum.v"
-`include "bubble_collapse_shifter.v"
+// `include "bubble_collapse_shifter.v"
+`include "multi_stage_bc_shifter.v"
 
 module ZVCompressor128 #(
     parameter WORD_WIDTH    = 8,
@@ -44,7 +45,7 @@ endgenerate
 LFPrefixSum128 #(.PSUM_WIDTH(PSUM_WIDTH)) psum_unit(.mask(mask), .psum(psum));
 
 // Generate compressed lowered input feature map and mapping table
-BCShifter128 #(
+MSBCShifter128 #(
     .WORD_WIDTH(WORD_WIDTH), .PSUM_WIDTH(PSUM_WIDTH), .DIST_WIDTH(DIST_WIDTH), .MAX_LIFM_RSIZ(MAX_LIFM_RSIZ)
 ) bc_shift(
     .psum(psum_pipe1), .lifm_line(lifm_pipe1), .mt_line(mt_pipe1),
