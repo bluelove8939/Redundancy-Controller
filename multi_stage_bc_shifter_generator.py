@@ -38,46 +38,58 @@ wire [128*WORD_WIDTH-1:0] lifm_st{stage}_wi;  // stage input for LIFM
 wire [128*WORD_WIDTH-1:0] lifm_st{stage}_wo;  // stage output of LIFM
 wire [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_st{stage}_wi;  // stage input for MT
 wire [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_st{stage}_wo;  // stage output of MT
-wire [PSUM_WIDTH-1:0] dist_st{stage}_wi;  // stage input for distance
 
-assign lifm_st{stage}_wi = {'lifm_line' if stage == 0 else f'lifm_st{stage-1}_wo'};''')
+assign lifm_st{stage}_wi = {'lifm_line' if stage == 0 else f'lifm_st{stage-1}_wo'};
+assign mt_st{stage}_wi = {'mt_line' if stage == 0 else f'mt_st{stage-1}_wo'};''')
 
     for cidx in range(0, 128, csize):
-        if (cidx / csize) % 2 == 0:
+        if (cidx // csize) % 2 == 1:
+            sidx = cidx//csize//2
+
+            # csize: size of a chunk (2^stage)
+            # cidx:  index of shifter input chunk (first element of a chunk)
+            # sidx:  index of barrel shifter
+            #
+            # shifter input chunk: arr[WIDTH*{cidx+csize}-1:WIDTH*{cidx}]
+            # shifter prev  chunk: arr[WIDTH*{cidx}-1:WIDTH*{cidx-csize}]
+            # shifter pprev chunk: arr[WIDTH*{cidx-csize}-1:WIDTH*{cidx-(2*csize)}]
+            #
+            # stride: psum[PSUM_WIDTH*{cidx}-1:PSUM_WIDTH*{cidx-1}] - psum[PSUM_WIDTH*{cidx-csize}-1:PSUM_WIDTH*{cidx-csize-1}]
+
             vgen.register_line(f'''
-// Stage{stage} Index{cidx//csize//2}
-wire [WORD_WIDTH*{csize}*2-1:0]               i_lifm_st{stage}_idx{cidx//csize//2};
-wire [WORD_WIDTH*{csize}*2-1:0]               o_lifm_st{stage}_idx{cidx//csize//2};
-wire [DIST_WIDTH*MAX_LIFM_RSIZ*{csize}*2-1:0] i_mt_st{stage}_idx{cidx//csize//2};
-wire [DIST_WIDTH*MAX_LIFM_RSIZ*{csize}*2-1:0] o_mt_st{stage}_idx{cidx//csize//2};
-wire [{math.ceil(math.log2(csize*2))}-1:0]    i_dist_st{stage}_idx{cidx//csize//2};
+// Stage{stage} Index{sidx}
+wire [WORD_WIDTH*{csize}*2-1:0] i_lifm_st{stage}_idx{sidx};
+wire [WORD_WIDTH*{csize}*2-1:0] o_lifm_st{stage}_idx{sidx};
+wire [DIST_WIDTH*MAX_LIFM_RSIZ*{csize}*2-1:0] i_mt_st{stage}_idx{sidx};
+wire [DIST_WIDTH*MAX_LIFM_RSIZ*{csize}*2-1:0] o_mt_st{stage}_idx{sidx};
+wire [{math.ceil(math.log2(csize*2))}-1:0] i_dist_st{stage}_idx{sidx};
 
-assign i_lifm_st{stage}_idx{cidx//csize//2} = {{lifm_st{stage}_wi[WORD_WIDTH*{cidx+2*csize}-1:WORD_WIDTH*{cidx+csize}], {{WORD_WIDTH*{csize}{{1'b0}}}}}};
-assign i_mt_st{stage}_idx{cidx//csize//2}   = {{mt_st{stage}_wi[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+2*csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}], {{DIST_WIDTH*MAX_LIFM_RSIZ*{csize}{{1'b0}}}}}};
-assign i_dist_st{stage}_idx{cidx//csize//2} = psum[PSUM_WIDTH*{cidx+csize+1}-1:PSUM_WIDTH*{cidx+csize}] - psum[PSUM_WIDTH*{cidx+1}-1:PSUM_WIDTH*{cidx}];
+assign i_lifm_st{stage}_idx{sidx} = {{ lifm_st{stage}_wi[WORD_WIDTH*{cidx+csize}-1:WORD_WIDTH*{cidx}], {{ WORD_WIDTH*{csize}{{1'b0}} }} }};
+assign i_mt_st{stage}_idx{sidx}   = {{ mt_st{stage}_wi[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}], {{ DIST_WIDTH*MAX_LIFM_RSIZ*{csize}{{1'b0}} }} }};
+assign i_dist_st{stage}_idx{sidx} = { f"psum[PSUM_WIDTH*{cidx}-1:PSUM_WIDTH*{cidx-1}]" if sidx == 0 else f"psum[PSUM_WIDTH*{cidx}-1:PSUM_WIDTH*{cidx-1}] - psum[PSUM_WIDTH*{cidx-csize}-1:PSUM_WIDTH*{cidx-csize-1}]" };
 
 VShifter #(
-    .WORD_WIDTH(WORD_WIDTH), .NUMEL({csize}*2), .NUMEL_LOG({math.ceil(math.log2(csize*2))})
-) vs_lifm_st{stage}_idx{cidx//csize//2} (
-    .i_vec(i_lifm_st{stage}_idx{cidx//csize//2}), .stride(i_dist_st{stage}_idx{cidx//csize//2}), .o_vec(o_lifm_st{stage}_idx{cidx//csize//2})
+    .WORD_WIDTH(WORD_WIDTH), .NUMEL({csize*2}), .NUMEL_LOG({math.ceil(math.log2(csize*2))})
+) vs_lifm_st{stage}_idx{sidx} (
+    .i_vec(i_lifm_st{stage}_idx{sidx}), .stride(i_dist_st{stage}_idx{sidx}), .o_vec(o_lifm_st{stage}_idx{sidx})
 );
 
 VShifter #(
-    .WORD_WIDTH(DIST_WIDTH*MAX_LIFM_RSIZ), .NUMEL({csize}*2), .NUMEL_LOG({math.ceil(math.log2(csize*2))})
-) vs_mt_st{stage}_idx{cidx//csize//2} (
-    .i_vec(i_mt_st{stage}_idx{cidx//csize//2}), .stride(i_dist_st{stage}_idx{cidx//csize//2}), .o_vec(o_mt_st{stage}_idx{cidx//csize//2})
+    .WORD_WIDTH(DIST_WIDTH*MAX_LIFM_RSIZ), .NUMEL({csize*2}), .NUMEL_LOG({math.ceil(math.log2(csize*2))})
+) vs_mt_st{stage}_idx{sidx} (
+    .i_vec(i_mt_st{stage}_idx{sidx}), .stride(i_dist_st{stage}_idx{sidx}), .o_vec(o_mt_st{stage}_idx{sidx})
 );
 
-assign lifm_st{stage}_wo[WORD_WIDTH*{cidx+csize}-1:WORD_WIDTH*{cidx}] = o_lifm_st{stage}_idx{cidx//csize//2}[WORD_WIDTH*{cidx+csize}-1:WORD_WIDTH*{cidx}] | i_lifm_st{stage}_idx{cidx//csize//2}[WORD_WIDTH*{cidx+csize}-1:WORD_WIDTH*{cidx}];
-assign lifm_st{stage}_wo[WORD_WIDTH*{cidx+2*csize}-1:WORD_WIDTH*{cidx+csize}] = o_lifm_st{stage}_idx{cidx//csize//2}[WORD_WIDTH*{cidx+2*csize}-1:WORD_WIDTH*{cidx+csize}];
-assign mt_st{stage}_wo[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}] = o_mt_st{stage}_idx{cidx//csize//2}[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}] | i_mt_st{stage}_idx{cidx//csize//2}[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}];
-assign mt_st{stage}_wo[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+2*csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}] = o_mt_st{stage}_idx{cidx//csize//2}[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+2*csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}];''')
+assign lifm_st{stage}_wo[WORD_WIDTH*{cidx+csize}-1:WORD_WIDTH*{cidx}] = o_lifm_st{stage}_idx{sidx}[WORD_WIDTH*{2*csize}-1:WORD_WIDTH*{csize}];
+assign lifm_st{stage}_wo[WORD_WIDTH*{cidx}-1:WORD_WIDTH*{cidx-csize}] = o_lifm_st{stage}_idx{sidx}[WORD_WIDTH*{csize}-1:0] | lifm_st{stage}_wi[WORD_WIDTH*{cidx}-1:WORD_WIDTH*{cidx-csize}];
+assign mt_st{stage}_wo[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx+csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}] = o_mt_st{stage}_idx{sidx}[DIST_WIDTH*MAX_LIFM_RSIZ*{2*csize}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{csize}];
+assign mt_st{stage}_wo[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx-csize}] = o_mt_st{stage}_idx{sidx}[DIST_WIDTH*MAX_LIFM_RSIZ*{csize}-1:0] | mt_st{stage}_wi[DIST_WIDTH*MAX_LIFM_RSIZ*{cidx}-1:DIST_WIDTH*MAX_LIFM_RSIZ*{cidx-csize}];
+''')
             
 
 vgen.register_line(code=f'''
-                   
-assign lifm_comp = o_lifm_st6_idx0;
-assign mt_comp = o_mt_st6_idx0;''')
+assign lifm_comp = lifm_st6_wo;
+assign mt_comp = mt_st6_wo;''')
 
 
 # Tail
