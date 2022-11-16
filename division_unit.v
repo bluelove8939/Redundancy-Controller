@@ -36,6 +36,10 @@ assign valid = valid_out_reg;
 assign quot = quot_reg;
 assign mod = mod_reg;
 
+// always @(*) begin
+//     $display("mode = %d", mode);
+// end
+
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
         left_op_reg <= 0;
@@ -47,6 +51,7 @@ always @(posedge clk or negedge reset_n) begin
 
         quot_reg <= 0;
         mod_reg <= 0;
+        mode <= DIV_IDLE;
     end
 
     else if (mode == DIV_IDLE) begin
