@@ -45,7 +45,7 @@ end
 
 // PE test
 initial begin
-    $dumpfile("tb_prefix_sum.vcd");
+    $dumpfile("tb_division_unit.vcd");
     $dumpvars(-1, clk);
     $dumpvars(-1, left_op);
     $dumpvars(-1, right_op);

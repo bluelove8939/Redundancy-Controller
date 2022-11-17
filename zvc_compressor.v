@@ -1,5 +1,4 @@
 `include "prefix_sum.v"
-// `include "bubble_collapse_shifter.v"
 `include "multi_stage_bc_shifter.v"
 
 module ZVCompressor128 #(
