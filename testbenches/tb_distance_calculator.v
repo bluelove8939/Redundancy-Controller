@@ -17,7 +17,7 @@ integer dr_orig;
 
 // Instantiation of processing element
 reg [WORD_WIDTH-1:0] idx1, idx2, ow, fw, st;
-wire [MAX_C_SIZE-1:0] except;
+wire valid;
 wire [DIST_WIDTH-1:0] dr;
 
 DistanceCalculator #(
@@ -25,7 +25,7 @@ DistanceCalculator #(
 ) distcalc (
     .idx1(idx1), .idx2(idx2),
     .ow(ow), .fw(fw), .st(st),
-    .except(except), .dr(dr)
+    .valid(valid), .dr(dr)
 );
 
 
@@ -52,10 +52,10 @@ initial begin : PE_TEST
     $dumpvars(-1, idx1);
     $dumpvars(-1, idx2);
     $dumpvars(-1, dr);
-    $dumpvars(-1, except);
+    $dumpvars(-1, valid);
 
-    $monitor("clk: %3d  OW: %d  FW: %2d  S: %2d  idx1: %2d  idx2: %2d -> dr: %2d  orig: %2d\n- except: %b", 
-             clk_counter, ow, fw, st, idx1, idx2, dr, dr_orig, except);
+    $monitor("clk: %3d  OW: %d  FW: %2d  S: %2d  idx1: %2d  idx2: %2d -> dr: %2d  orig: %2d  valid: %b", 
+             clk_counter, ow, fw, st, idx1, idx2, dr, dr_orig, valid);
 
     // reset_n = 1;
     // # HCLOCK_PS

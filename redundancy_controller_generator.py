@@ -1,3 +1,15 @@
+import os
+
+from utils.verilog_generator import VerilogGenerator
+
+
+dirname = os.curdir
+filename = f'redundancy_controller'
+
+vgen = VerilogGenerator(dirname=dirname, filename=filename)
+
+# Header
+vgen.register_line(code=f'''
 `include "distance_calculator.v"
 
 
@@ -37,8 +49,30 @@ DistanceCalculator #(
     .idx1(idx1), .idx2(idx2), 
     .ow(ow), .fw(fw), .st(st),
     .valid(valid), .dr(dr)
-);
+);''')
 
+
+# Logic for Mapping Table Generation
+vgen.register_line(code=f'''
+// MPTE generation logic
+wire [MPTE_WIDTH*MAX_C_SIZE-1:0] mpte_update [0:1];
+
+always @(*) begin''')
+
+for idx in range(128):
+    vgen.register_line(code=f'''
+    if (valid && (dr <= {idx}))
+        mpte_update[1][MPTE_WIDTH*({idx+1}-dr)-1:MPTE_WIDTH*({idx}-dr)]
+        mpte_update[0][MPTE_WIDTH*{idx+1}-1:MPTE_WIDTH*{idx}] = {{ MPTE_WIDTH{{ 1'b0 }} }};
+    end else begin
+
+    end''')
+
+vgen.register_line(code=f'''
+end''')
+
+# Tail
+vgen.register_line(code=f'''
 // Shifting LIFM and MPTE
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
@@ -51,10 +85,15 @@ always @(posedge clk or negedge reset_n) begin
     end 
     
     else begin
-        {idx2, idx1} <= {idx, idx2};
-        {lifm_buff[1], lifm_buff[0]} <= {lifm_line, lifm_buff[1]};
-        {mpte_buff[1], mpte_buff[0]} <= {mpte_line, mpte_buff[1]};
+        {{idx2, idx1}} <= {{idx, idx2}};
+        {{lifm_buff[1], lifm_buff[0]}} <= {{lifm_line, lifm_buff[1]}};
+        {{mpte_buff[1], mpte_buff[0]}} <= {{mpte_line, mpte_buff[1]}};
     end
 end
 
-endmodule
+endmodule''')
+
+
+if __name__ == '__main__':
+    vgen.compile(save_log=False, remove_output=True)
+    vgen.print_result()
