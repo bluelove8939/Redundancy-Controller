@@ -39,6 +39,28 @@ DistanceCalculator #(
     .valid(valid), .dr(dr)
 );
 
+// Generating MPTE
+reg [MPTE_WIDTH*MAX_C_SIZE-1:0] mpte_udpate [0:1];
+
+always @(dr) begin
+    case (dr)
+        1: begin
+            
+        end
+        default: 
+    endcase
+end
+
+always @(*) begin
+    for (integer citer = 0; citer < MAX_C_SIZE; citer = citer+1) begin
+        if (valid && (dr <= citer)) begin
+            if (lifm_buff[0][citer] == lifm_buff[1][citer - dr]) begin
+                
+            end
+        end
+    end
+end
+
 // Shifting LIFM and MPTE
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
