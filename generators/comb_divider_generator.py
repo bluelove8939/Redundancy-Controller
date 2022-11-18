@@ -3,13 +3,13 @@ import os
 from utils.verilog_generator import VerilogGenerator
 
 
+# Parameter
+WORD_WIDTH = 16
+
 dirname = os.curdir
-filename = 'comb_divider'
+filename = f'comb_divider{WORD_WIDTH}'
 
 vgen = VerilogGenerator(dirname=dirname, filename=filename)
-
-# Parameter
-WORD_WIDTH = 8
 
 # Header
 vgen.register_line(code=f'''
@@ -36,8 +36,8 @@ assign quot_st{stage} = {{{f"quot_st{stage-1}[{WORD_WIDTH-2}:0]" if stage != 0 e
 
 # Tail
 vgen.register_line(code=f'''
-assign quot = quot_st7;
-assign mod = mod_st7;
+assign quot = quot_st{WORD_WIDTH-1};
+assign mod = mod_st{WORD_WIDTH-1};
 
 endmodule;''')
 

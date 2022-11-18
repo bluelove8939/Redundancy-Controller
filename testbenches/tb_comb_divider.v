@@ -1,22 +1,23 @@
-`include "comb_divider.v"
+`include "comb_divider16.v"
 
 
 module comb_divider_tb;
 
 parameter  CLOCK_PS = 10000;
 parameter  HCLOCK_PS = 5000;
+parameter  WORD_WIDTH = 16;
 
 reg clk;
 integer clk_counter;
 
 
 // Instantiation of processing element
-reg [7:0] lop;
-reg [7:0] rop;
-wire [7:0] quot;
-wire [7:0] mod;
+reg [WORD_WIDTH-1:0] lop;
+reg [WORD_WIDTH-1:0] rop;
+wire [WORD_WIDTH-1:0] quot;
+wire [WORD_WIDTH-1:0] mod;
 
-CombDivider8 cd_unit (.lop(lop), .rop(rop), .quot(quot), .mod(mod));
+CombDivider16 cd_unit (.lop(lop), .rop(rop), .quot(quot), .mod(mod));
 
 // Clock signal generation
 initial begin : CLOCK_GENERATOR
