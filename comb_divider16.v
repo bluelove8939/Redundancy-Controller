@@ -186,4 +186,4 @@ assign quot_st15 = {quot_st14[14:0], interm_st15 >= rop ? 1'b1 : 1'b0};
 assign quot = quot_st15;
 assign mod = mod_st15;
 
-endmodule;
+endmodule

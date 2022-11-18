@@ -7,4 +7,4 @@ module CombMultiplier8 (
 
 assign oval = lop * rop;
 
-endmodule;
+endmodule

@@ -97,7 +97,7 @@ assign quot_st7 = {quot_st6[6:0], interm_st7 >= rop ? 1'b1 : 1'b0};
 assign quot = quot_st7;
 assign mod = mod_st7;
 
-endmodule;
+endmodule
 
 
 module CombDivider8WoQuot (
@@ -193,4 +193,4 @@ assign mod_st7 = interm_st7 >= rop ? (interm_st7 - rop) : interm_st7;
 
 assign mod = mod_st7;
 
-endmodule;
+endmodule
