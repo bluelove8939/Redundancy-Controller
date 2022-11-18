@@ -100,11 +100,11 @@ assign mod = mod_st7;
 endmodule;
 
 
-module CombDivider8_wo_mod (
+module CombDivider8WoQuot (
     input [7:0] lop,
     input [7:0] rop,
 
-    output [7:0] quot
+    output [7:0] mod
 );
 
 // Stage 0
@@ -186,13 +186,11 @@ assign quot_st6 = {quot_st5[6:0], interm_st6 >= rop ? 1'b1 : 1'b0};
 
 // Stage 7
 wire [7:0] interm_st7;
-wire [7:0] lop_st7;
-wire [7:0] quot_st7;
+wire [7:0] mod_st7;
 
 assign interm_st7 = { mod_st6[6:0], lop_st6[7] };
-assign lop_st7 = { lop_st6[6:0], 1'b0 };
-assign quot_st7 = {quot_st6[6:0], interm_st7 >= rop ? 1'b1 : 1'b0};
+assign mod_st7 = interm_st7 >= rop ? (interm_st7 - rop) : interm_st7;
 
-assign quot = quot_st7;
+assign mod = mod_st7;
 
 endmodule;

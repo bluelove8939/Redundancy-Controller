@@ -1,17 +1,19 @@
 module RedundancyController #(
-    parameter WORD_WIDTH    = 8,
-    parameter PSUM_WIDTH    = 7,
-    parameter DIST_WIDTH    = 7,
-    parameter MAX_LIFM_RSIZ = 4
+    parameter WORD_WIDTH = 8,    // bitwidth of a word (fixed to 8bit)
+    parameter DIST_WIDTH = 7,    // bitwidth of distances
+    parameter MAX_R_SIZE = 4,    // size of each row of lifm and mapping table
+    parameter MAX_C_SIZE = 128,  // size of each column of lifm and mapping table
+    parameter MPTE_WIDTH = DIST_WIDTH * MAX_R_SIZE  // width of mapping table entry
 ) (
-    input clk,
-    input reset_n,
+    input clk,      // global clock signal (positive-edge triggered)
+    input reset_n,  // global asynchronous reset signal (negative triggered)
 
-    input [DIST_WIDTH-1:0]     dist,
-    input [128*WORD_WIDTH-1:0] lifm_line,
+    input [WORD_WIDTH-1:0] idx,  // index of weight value (lowered filter)
 
-    output [128*WORD_WIDTH-1:0]               lifm_comp,
-    output [128*DIST_WIDTH*MAX_LIFM_RSIZ-1:0] mt_comp
+    input [MAX_R_SIZE*WORD_WIDTH-1:0] lifm_line,  // un-processed lifm column
+
+    output [MAX_R_SIZE*WORD_WIDTH-1:0] lifm_comp,  // vector of compressed lifm
+    output [MAX_R_SIZE*MPTE_WIDTH-1:0] mt_comp     // vector mapping table entries
 );
 
 

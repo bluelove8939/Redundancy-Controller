@@ -79,10 +79,6 @@ class VerilogGenerator(object):
         print("compile done\n")
 
     def print_result(self):
-        print(f"Compile Results")
-        print(f"- dirname:  {self.dirname if self.dirname != os.curdir else '(current directory)'}")
-        print(f"- filename: {self.filename}\n")
-
         for el in self.elinenum:
             enn = '\n'.join(f'  [{ei + 1}] {en}' for ei, en in enumerate(self.enames[el][:min(len(self.enames[el]), 10)]))
             print(f"ln {el:4d}\n{enn}" + ('' if len(self.enames[el]) <= 10 else f'\n  ({len(self.enames[el])-10} more errors occurred)'), end='\n')
