@@ -40,13 +40,13 @@ wire [2*WORD_WIDTH-1:0] dr_mul,  // oval = (OW - FW) * dv
 
 assign wd = ow - fw;         // wd = OW - FW
 assign dr_nst = dr_mul + d;  // dr_nst = dr_mul + d = (OW - FW) * dv + d
-assign st_exp = {8'b0, st};
+assign st_exp = {8'b0, st};  // zero padding to MSB
 
-CombMultiplier8 cmul_dr (.lop(wd), .rop(dv), .oval(dr_mul));                    // dr_mul = wd * dv = (OW - FW) * dv
+CombMultiplier8 cmul_dr (.lop(wd), .rop(dv), .oval(dr_mul));                        // dr_mul = wd * dv = (OW - FW) * dv
 CombDivider16   cdiv_dr (.lop(dr_nst), .rop(st_exp), .quot(dr_raw), .mod(dr_mod));  // dr = dr_nst / S = ((OW - FW) * dv + d) / S
 
 // Output assignment
-assign valid = ~(|{dr_raw[2*WORD_WIDTH-1:DIST_WIDTH], dr_mod});
-assign dr    = dr_raw[DIST_WIDTH-1:0];
+assign valid = ~(|{dr_raw[2*WORD_WIDTH-1:DIST_WIDTH], dr_mod});  // check if there exists overflow and stride exception
+assign dr    = dr_raw[DIST_WIDTH-1:0];                           // distance of redundant output pixels (within flatten output image)
 
 endmodule
