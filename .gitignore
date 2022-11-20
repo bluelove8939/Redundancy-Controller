@@ -3,3 +3,4 @@ utils/__pycache__/
 *.vvp
 *.log
 tmp.v
+crossbar_reference.v
