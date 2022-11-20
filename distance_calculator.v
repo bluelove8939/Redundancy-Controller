@@ -4,9 +4,9 @@
 
 
 module DistanceCalculator #(
-    parameter WORD_WIDTH = 8,
-    parameter DIST_WIDTH = 7,
-    parameter MAX_C_SIZE = 128
+    parameter WORD_WIDTH = 8,   // bitwidth of a word (fixed to 8bit)
+    parameter DIST_WIDTH = 3,   // bitwidth of distances
+    parameter MAX_C_SIZE = 16   // size of each column of lifm and mapping table
 ) (
     input [WORD_WIDTH-1:0] idx1,  // indices: smaller index of redundant weight pair
     input [WORD_WIDTH-1:0] idx2,  // indices: larger index of redundant weight pair
