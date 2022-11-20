@@ -51,15 +51,19 @@ always @(dr) begin
     endcase
 end
 
-always @(*) begin
-    for (integer citer = 0; citer < MAX_C_SIZE; citer = citer+1) begin
-        if (valid && (dr <= citer)) begin
-            if (lifm_buff[0][citer] == lifm_buff[1][citer - dr]) begin
-                
-            end
-        end
+// Stage 1: Routing copied MPTE with MUXes
+wire [MAX_C_SIZE-1:0] oor_flag,                    // out of range flag
+                      red_flag;                    // redundancy flag
+wire [DIST_WIDTH-1:0] cpd_index [0:MAX_C_SIZE-1];  // copied index
+
+genvar citer_gvar;
+generate
+    for (citer_gvar = 0; citer_gvar < MAX_C_SIZE; citer_gvar = citer_gvar+1) begin
+        assign oor_flag[citer_gvar]  = valid && (dr <= citer_gvar) ? 1'b1 : 1'b0;
+        assign red_flag[citer_gvar]  = lifm_buff[citer] == lifm_buff[citer_gvar];
+        assign cpd_index[citer_gvar] = citer_gvar <= dr ? citer_gvar-dr :0; 
     end
-end
+endgenerate
 
 // Shifting LIFM and MPTE
 always @(posedge clk or negedge reset_n) begin
