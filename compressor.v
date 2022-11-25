@@ -23,8 +23,9 @@ wire [MAX_R_SIZE-1:0] mask;
 
 genvar riter_gvar;
 generate
-    for (riter_gvar = 0; riter_gvar < MAX_R_SIZE; riter_gvar = riter_gvar+1)
+    for (riter_gvar = 0; riter_gvar < MAX_R_SIZE; riter_gvar = riter_gvar+1) begin
         assign mask[riter_gvar] = (data_in_buff[WORD_WIDTH*riter_gvar+:WORD_WIDTH] == 0) ? 1'b0 : 1'b1;
+    end
 endgenerate
 
 // LeadingOneDetector
